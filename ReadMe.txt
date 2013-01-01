@@ -1,5 +1,5 @@
 ﻿WmDOT Read-me
-v.11, 2012-11-25
+v.11, 2012-12-28
 Copyright © 2011-12 by W. Minchin. For more info, please visit
     https://github.com/MinchinWeb/openttd-wmdot  or
     http://www.tt-forums.net/viewtopic.php?f=65&t=53698
@@ -28,8 +28,8 @@ WmDOT starts by selecting a 'capital' and builds its Headquarters there. (If
 WmDOT requires OpenTTD version 1.2 or newer. This is available as a free
     download from OpenTTD.org
 As dependencies, WmDOT also requires:
-    - MinchinWeb's MetaLibrary, v.5
-    - SuperLib, v.26 ('SuperLib-26.tar')
+    - MinchinWeb's MetaLibrary, v.6
+    - SuperLib, v.27 ('SuperLib-27.tar')
     - Binary Heap, v.1 ('Queue.BinaryHeap-1.tar')
 
 -- Installation ---------------------------------------------------------------
@@ -151,4 +151,4 @@ provided:
     + Attribution is provided in the normal place for recognition of 3rd party
         contributions.
     + You accept that this software is provided to you "as is", without
-	    warranty.
+        warranty.

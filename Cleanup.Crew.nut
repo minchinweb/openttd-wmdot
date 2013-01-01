@@ -1,5 +1,5 @@
-﻿/*	Cleanup Crew v.3, r.249, [2012-06-27] 
- *		part of WmDOT v.10
+﻿/*	Cleanup Crew v.4, [2012-12-27] 
+ *		part of WmDOT v.11
  *	Copyright © 2011-12 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
@@ -27,9 +27,9 @@
 //		Queue.Fibonacci_Heap v.3
 
 class OpCleanupCrew {
-	function GetVersion()       { return 3; }
-	function GetRevision()		{ return 249; }
-	function GetDate()          { return "2012-06-27"; }
+	function GetVersion()       { return 4; }
+	function GetRevision()		{ return 0; }
+	function GetDate()          { return "2012-12-27"; }
 	function GetName()          { return "Cleanup Crew"; }
 
 	_heap_class = import("Queue.Fibonacci_Heap", "", 3);
@@ -159,7 +159,7 @@ function OpCleanupCrew::Run()
 			if (AIMap.DistanceManhattan(TestPair[0], TestPair[1]) == 1) {
 				Money.GreaseMoney((AIRoad.GetBuildCost(this._road_type, AIRoad.BT_ROAD) * 2.5).tointeger() );
 				//	Use RemoveRoad, but go uphill
-				if (AITile.GetMinHeight(TestPair[0]) < AITile.GetMinHeight(TestPair[0])) {
+				if (AITile.GetMinHeight(TestPair[0]) < AITile.GetMinHeight(TestPair[1])) {
 					AIRoad.RemoveRoad(TestPair[0], TestPair[1]);
 				} else {
 					AIRoad.RemoveRoad(TestPair[1], TestPair[0]);

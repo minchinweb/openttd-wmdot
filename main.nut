@@ -1,4 +1,4 @@
-﻿/*	WmDOT v.11, [2011-11-25]
+﻿/*	WmDOT v.11, [2011-12-29]
  *	Copyright © 2011-12 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
@@ -13,18 +13,19 @@
  *	+ You accept that this software is provided to you "as is", without warranty.
  */
 
-// Does the Road.Pathfinder provided by the AI Team need to be updated?
-
-import("util.MinchinWeb", "MetaLib", 5);
-	RoadPathfinder <- MetaLib.RoadPathfinder;
+import("util.MinchinWeb", "MetaLib", 6);
+//	RoadPathfinder <- MetaLib.RoadPathfinder;
+	RoadPathfinder <- MetaLib.DLS;
+	ExistingRoadPathfinder <- MetaLib.RoadPathfinder;
 	Array <- MetaLib.Array;
 	Atlas <- MetaLib.Atlas;
 	Marine <- MetaLib.Marine;
 	OpLog <- MetaLib.Log;
-import("util.superlib", "SuperLib", 26);		//	For loan management
+import("util.superlib", "SuperLib", 27);		//	For loan management
 	SLMoney <- SuperLib.Money;
 	Helper <- SuperLib.Helper;
-	AIAbstractList <- AIList	// to support SuperLib v.21
+	Direction <- SuperLib.Direction;
+//	AIAbstractList <- AIList	// to support SuperLib v.21
 		
 require("OpDOT.nut");				//	OperationDOT
 require("OpMoney.nut");				//	Operation Money
@@ -35,6 +36,7 @@ require("Cleanup.Crew.nut");		//	Cleanup Crew
 require("OpHibernia.nut");			//	Operation Hibernia
 require("Ship.Manager.nut");		//	Ship Manager
 require("Event.Handler.nut");		//	Event Handler
+require("OpFreeway.nut");			//	Freeway Builder
 		
 
  
@@ -44,7 +46,7 @@ require("Event.Handler.nut");		//	Event Handler
 	WmDOTv = 11;
 	/*	Version number of AI
 	 */	
-	WmDOTr = 252;
+	WmDOTr = 121229;
 	/*	Reversion number of AI
 	 */
 	 
@@ -63,7 +65,8 @@ require("Event.Handler.nut");		//	Event Handler
 	Hibernia = OpHibernia();
 	Manager_Ships = ManShips();
 	Event = Events();
-	
+	Freeways = OpFreeway();
+	DLS = RoadPathfinder();
   
 	function Start();
 }
@@ -94,6 +97,7 @@ function WmDOT::Start()
 	Log.Note("     " + Hibernia.GetName() + ", v." + Hibernia.GetVersion() + " r." + Hibernia.GetRevision() + "  loaded!",0);
 	Log.Note("     " + Manager_Ships.GetName() + ", v." + Manager_Ships.GetVersion() + " r." + Manager_Ships.GetRevision() + "  loaded!",0);
 	Log.Note("     " + Event.GetName() + ", v." + Event.GetVersion() + " r." + Event.GetRevision() + "  loaded!",0);
+	Log.Note("     " + Freeways.GetName() + ", v." + Freeways.GetVersion() + " r." + Freeways.GetRevision() + "  loaded!",0);
 	StartInfo();		//	AyStarInfo()
 						//	RoadPathfinder()
 						//	NeighbourhoodInfo()
@@ -115,6 +119,7 @@ function WmDOT::Start()
 	local Time;
 	
 	DOT.Settings.HQTown = HQTown;
+
 	while (true) {
 		Time = this.GetTick();	
 //		Log.UpdateDebugLevel();
@@ -123,6 +128,7 @@ function WmDOT::Start()
 		if (Time > Towns.State.NextRun)			{ Towns.Run(); }
 		if (Time > CleanupCrew.State.NextRun)	{ CleanupCrew.Run(); }
 		if (Time > DOT.State.NextRun)			{ DOT.Run(); }
+		if (Time > Freeways.State.NextRun)		{ Freeways.Run(); }
 		if (Time > Hibernia.State.NextRun)		{ Hibernia.Run(); }
 		if (Time > Manager_Ships.State.NextRun)	{ Manager_Ships.Run(); }
 		if (Time > Event.State.NextRun)			{ Event.Run(); }
@@ -394,7 +400,7 @@ function WmDOT::BuildWmHQ()
 	local tick;
 	tick = this.GetTick();
 	
-//	AICompany.BuildCompanyHQ(0xA284);
+	// AICompany.BuildCompanyHQ(0xA284);
 	
 	// Check for exisiting HQ (mine)
 	if (AICompany.GetCompanyHQ(AICompany.ResolveCompanyID(AICompany.COMPANY_SELF)) != -1) {
@@ -408,7 +414,7 @@ function WmDOT::BuildWmHQ()
 	local DotHQList = [];
 	for (local i=0; i < AICompany.COMPANY_LAST; i++) {
 		//	Test if company has built HQ
-//		AILog.Info("     Testing Company " + i + ".");
+		// AILog.Info("     Testing Company " + i + ".");
 		if (AICompany.GetCompanyHQ(AICompany.ResolveCompanyID(i)) != -1) {
 			local TestName = AICompany.GetName(i);
 			if (TestName.find("DOT") != null) {
@@ -434,7 +440,7 @@ function WmDOT::BuildWmHQ()
 	local HQBuilt = false;
 	while (HQBuilt == false) {
 		HQBuilt = AICompany.BuildCompanyHQ(Walker.Walk());
-//		AISign.BuildSign(Walker.GetTile(), Walker.GetStep());
+		// AISign.BuildSign(Walker.GetTile(), Walker.GetStep());
 		
 		// Safety: Break if it tries for 400 times and still doesn't work!
 		if (Walker.GetStage() == 40) {
@@ -515,6 +521,7 @@ function WmDOT::TheGreatLinkUp()
 	Hibernia.LinkUp();
 	Manager_Ships.LinkUp();
 	Event.LinkUp();
+	Freeways.LinkUp();
 	Log.Note("The Great Link Up is Complete!",1);
 	Log.Note("",1);
 }

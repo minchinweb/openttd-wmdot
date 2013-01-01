@@ -1,5 +1,5 @@
-﻿/*	OperationDOT v.5, r.212, [2012-01-21],  
- *		part of WmDOT v.8
+﻿/*	OperationDOT v.6, [2012-12-28],  
+ *		part of WmDOT v.11
  *	Copyright © 2011-12 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
@@ -44,8 +44,8 @@
 
  class OpDOT {
 	function GetVersion()       { return 5; }
-	function GetRevision()		{ return 212; }
-	function GetDate()          { return "2012-01-21"; }
+	function GetRevision()		{ return 121228; }
+	function GetDate()          { return "2012-12-28"; }
 	function GetName()          { return "Operation DOT"; }
  
 	_SleepLength = null;
@@ -85,6 +85,8 @@
 	Money = null;
 	Towns = null;
 	CleanupCrew = null;
+	Freeways = null;
+	Pathfinder = null;
 	
 	 
 	constructor()
@@ -112,6 +114,8 @@
 		Money = OpMoney();
 		Towns = TownRegistrar();
 		CleanupCrew = OpCleanupCrew();
+		Freeways = OpFreeway();
+		Pathfinder = RoadPathfinder();
 	}
 }
 
@@ -200,6 +204,8 @@ function OpDOT::LinkUp()
 	this.Money = WmDOT.Money;
 	this.Towns = WmDOT.Towns;
 	this.CleanupCrew = WmDOT.CleanupCrew;
+	this.Freeways = WmDOT.Freeways;
+	this.Pathfinder = WmDOT.DLS;
 	Log.Note(this.GetName() + " linked up!",3);
 }
  
@@ -307,48 +313,52 @@ function OpDOT::Run() {
 					local tick = AIController.GetTick();
 					local KeepTrying = true;
 					local Tries = 1;
-					local PathFinder;
+					// local Pathfinder;
 					local BuildCost = 0;
 					
-					Log.Note("Attempt " + Tries + " to connect " +AITown.GetName(this._PairsToConnect[0]) + " to " + AITown.GetName(this._PairsToConnect[1]) + ".", 3);
-					PathFinder = RunPathfinderOnTownPairs(this._PairsToConnect);
+					Log.Note("Attempt " + Tries + " to connect " + AITown.GetName(this._PairsToConnect[0]) + " to " + AITown.GetName(this._PairsToConnect[1]) + ".", 3);
+					this.Pathfinder = RunPathfinderOnTownPairs(this._PairsToConnect);
 					
-					while (KeepTrying == true && PathFinder.GetPath() != null) {
+					while (KeepTrying == true && this.Pathfinder.GetPath() != null) {
 						Tries++;
-						Log.Note("Pathfinding took " + (AIController.GetTick() - tick) + " ticks. (MD = " + AIMap.DistanceManhattan(AITown.GetLocation(this._PairsToConnect[0]),AITown.GetLocation(this._PairsToConnect[1])) + ", Length = " + PathFinder.GetPathLength() + ").",3);
+						Log.Note("Pathfinding took " + (AIController.GetTick() - tick) + " ticks. (MD = " + AIMap.DistanceManhattan(AITown.GetLocation(this._PairsToConnect[0]),AITown.GetLocation(this._PairsToConnect[1])) + ", Length = " + this.Pathfinder.GetPathLength() + ").",3);
 						tick = AIController.GetTick();
-						CleanupCrew.AcceptBuiltTiles(PathFinder.TilesPairsToBuild() );
-						BuildCost = PathFinder.GetBuildCost();
+						CleanupCrew.AcceptBuiltTiles(this.Pathfinder.TilePairsToBuild() );
+						BuildCost = this.Pathfinder.GetBuildCost();
 						Log.Note("Cost of path is " + BuildCost + "£. Took " + (AIController.GetTick() - tick) + " ticks.", 3);
 						Money.FundsRequest(BuildCost*1.1);		//	To allow for inflation during construction
-						PathFinder.BuildPath();
-//						AILog.Info(Array.ToString2D(PathFinder.PathToTilePairs()));
+						this.Pathfinder.BuildPath();
+//						AILog.Info(Array.ToString2D(this.Pathfinder.PathToTilePairs()));
 						
 						//	Test to see if construction worked by running the
 						//		pathfinder and computing build cost of the 
 						//		second path
 						tick = AIController.GetTick();
 						Log.Note("Attempt " + Tries + " to connect " +AITown.GetName(this._PairsToConnect[0]) + " to " + AITown.GetName(this._PairsToConnect[1]) + ".", 3)
-						PathFinder = RunPathfinderOnTownPairs(this._PairsToConnect);
-						BuildCost = PathFinder.GetBuildCost();
+						this.Pathfinder = RunPathfinderOnTownPairs(this._PairsToConnect);
+						BuildCost = this.Pathfinder.GetBuildCost();
 						// TO-DO:	Check that the bridges and tunnels got
 						//			built; if unbuildable, their cost remains 0£
 						
 						if (BuildCost == 0) {
 							Log.Note("Successful connection!",3);
-							CleanupCrew.AcceptGoldenPath(PathFinder.PathToTilePairs());
+							CleanupCrew.AcceptGoldenPath(this.Pathfinder.PathToTilePairs());
 							CleanupCrew.SetToRun();
+							Freeways.AcceptPath(this.Pathfinder.PathToTiles());
+							Freeways.SetToRun();
 							KeepTrying = false;
 						}						
 						if ((Tries >= (WmDOT.GetSetting("OpDOT_RebuildAttempts") + 1)) && (KeepTrying == true)) {
 							Log.Warning("After " + Tries + " tries, unable to build path from " +AITown.GetName(this._PairsToConnect[0]) + " to " + AITown.GetName(this._PairsToConnect[1]) + ".");
-							CleanupCrew.AcceptGoldenPath(PathFinder.PathToTilePairs());
+							CleanupCrew.AcceptGoldenPath(this.Pathfinder.PathToTilePairs());
 							CleanupCrew.SetToRun();
+							Freeways.AcceptPath(this.Pathfinder.PathToTiles());
+							Freeways.SetToRun();
 							KeepTrying = false;
 						}
 					}
 					
-					if (PathFinder.GetPath() == null) {
+					if (this.Pathfinder.GetPath() == null) {
 						Log.Warning("Pathfinding took " + (AIController.GetTick() - tick) + " ticks and failed. (MD = " + AIMap.DistanceManhattan(AITown.GetLocation(this._PairsToConnect[0]),AITown.GetLocation(this._PairsToConnect[1])) + ").");
 					}
 
@@ -640,12 +650,12 @@ function OpDOT::ApplyTripGenerationModel(WmAtlas)
 
 function OpDOT::PickTowns(WmAtlas)
 {	
-	//	Picks two towns to connect, returns an array with the two of them
-	//	A zero entry in the matrix is used to ignore the possibily of connecting
-	//		the two (eg. same town, connection already exists)
-	//	Assumes WmAtlas comes in the form of a 2D matrix with the first
-	//		column being the TownID and the rest being the distance between
-	//		each town pair
+//	Picks two towns to connect, returns an array with the two of them
+//	A zero entry in the matrix is used to ignore the possibily of connecting
+//		the two (eg. same town, connection already exists)
+//	Assumes WmAtlas comes in the form of a 2D matrix with the first
+//		column being the TownID and the rest being the distance between
+//		each town pair
 
 	local tick;
 	tick = AIController.GetTick();
@@ -681,16 +691,16 @@ function OpDOT::PickTowns(WmAtlas)
 
 function OpDOT::RemoveExistingConnections(WmAtlas)
 {
-	//	Zeros out distances in the Atlas of existing connections
-	//	Required as a precondition to PickTowns() to get anything useful out of it
-	//	Note that a connection could be around the far end of the map and back...
-	//	Assumes the centre of town is a road tile and that you can follow a road
-	//		'out of town'
-	//
-	//	TO-DO
-	//	- check that the centre of town is a road tile
-	//	- check to see if you can get out of town and then do something when you can't
-	//	- make it only set one check one set of routes (half the matrix)
+//	Zeros out distances in the Atlas of existing connections
+//	Required as a precondition to PickTowns() to get anything useful out of it
+//	Note that a connection could be around the far end of the map and back...
+//	Assumes the centre of town is a road tile and that you can follow a road
+//		'out of town'
+//
+//	TO-DO
+//	- check that the centre of town is a road tile
+//	- check to see if you can get out of town and then do something when you can't
+//	- make it only set one check one set of routes (half the matrix)
 	
 	Log.Note("Removing already joined towns. This can take a while...",2)
 	
@@ -698,7 +708,7 @@ function OpDOT::RemoveExistingConnections(WmAtlas)
 	tick = AIController.GetTick();
 	
 	//	create instance of road pathfinder
-	local pathfinder = RoadPathfinder();
+	local pathfinder = ExistingRoadPathfinder();
 	//	pathfinder settings
 	pathfinder.PresetCheckExisting()
 	
@@ -754,9 +764,9 @@ function OpDOT::RemoveExistingConnections(WmAtlas)
 
 function OpDOT::GetSpeed()
 {
-	//	Gets max travel speed for buses
-	//	Backup system is based on original game buses in temporate
-	//		http://wiki.openttd.org/Buses
+//	Gets max travel speed for buses
+//	Backup system is based on original game buses in temporate
+//		http://wiki.openttd.org/Buses
 	
 	local ReturnSpeed;
 	local GameYear = 0;
@@ -826,10 +836,10 @@ function OpDOT::GetSpeed()
 
 function OpDOT::GetMaxDistance(Mode)
 {
-	//	Returns the 'max' connection distance
-	//	Uses either the speed or 'quarter map'
-	//	The idea is first the towns within the closer one are all joined, then the
-	//		towns in the further one, and then lastly, all towns
+//	Returns the 'max' connection distance
+//	Uses either the speed or 'quarter map'
+//	The idea is first the towns within the closer one are all joined, then the
+//		towns in the further one, and then lastly, all towns
 	
 	local Speed = GetSpeed();
 	local FractionMap = ((AIMap.GetMapSizeX() + AIMap.GetMapSizeY()) /2) / 2;	//	That gives you access to about a quarter of the map
