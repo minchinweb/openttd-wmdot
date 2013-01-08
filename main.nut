@@ -1,4 +1,4 @@
-﻿/*	WmDOT v.15, [2025-07-14]
+/*	WmDOT v.15, [2025-07-14]
  *	Copyright © 2011-13, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
@@ -16,6 +16,7 @@
 import("util.MinchinWeb", "MetaLib", 10);
 	RoadPathfinder <- MetaLib.DLS;
 	ExistingRoadPathfinder <- MetaLib.RoadPathfinder;
+	StreetcarPathfinder <- MetaLib.RoadPathfinder;
 	Array <- MetaLib.Array;
 	Atlas <- MetaLib.Atlas;
 	Marine <- MetaLib.Marine;
@@ -35,7 +36,8 @@ require("OpHibernia.nut");			//	Operation Hibernia
 require("Ship.Manager.nut");		//	Ship Manager
 require("Event.Handler.nut");		//	Event Handler
 require("OpFreeway.nut");			//	Freeway Builder
-
+require("OpStreetcar.nut");			//	Operation Streetcar
+		
 
 class WmDOT extends AIController {
 	//	SETTINGS
@@ -63,6 +65,7 @@ class WmDOT extends AIController {
 	Event = Events();
 	Freeways = OpFreeway();
 	DLS = RoadPathfinder();
+	StreetCars = OpStreetcar();
 
 	function Start();
 }
@@ -95,6 +98,7 @@ function WmDOT::Start() {
 	Log.Note("     " + Manager_Ships.GetName() + ", v." + Manager_Ships.GetVersion() + " r." + Manager_Ships.GetRevision() + "  loaded!", 0);
 	Log.Note("     " + Event.GetName() + ", v." + Event.GetVersion() + " r." + Event.GetRevision() + "  loaded!", 0);
 	Log.Note("     " + Freeways.GetName() + ", v." + Freeways.GetVersion() + " r." + Freeways.GetRevision() + "  loaded!", 0);
+	Log.Note("     " + StreetCars.GetName() + ", v." + StreetCars.GetVersion() + " r." + StreetCars.GetRevision() + "  loaded!", 0);
 	StartInfo();		//	AyStarInfo()
 						//	RoadPathfinder()
 						//	NeighbourhoodInfo()
@@ -116,6 +120,7 @@ function WmDOT::Start() {
 	local Time;
 
 	DOT.Settings.HQTown = HQTown;
+	StreetCars.Settings.StartTile = AITown.GetLocation(HQTown);
 
 	ColourWmDOT();
 
@@ -128,6 +133,7 @@ function WmDOT::Start() {
 		if (Time > CleanupCrew.State.NextRun)	{ CleanupCrew.Run(); }
 		if (Time > DOT.State.NextRun)			{ DOT.Run(); }
 		if (Time > Freeways.State.NextRun)		{ Freeways.Run(); }
+		if (Time > StreetCars.State.NextRun)	{ StreetCars.Run(); }
 		if (Time > Hibernia.State.NextRun)		{ Hibernia.Run(); }
 		if (Time > Manager_Ships.State.NextRun)	{ Manager_Ships.Run(); }
 		if (Time > Event.State.NextRun)			{ Event.Run(); }
