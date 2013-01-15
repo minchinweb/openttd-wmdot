@@ -1,4 +1,4 @@
-/*	Operation Streetcar v.1, [2013-01-o1],  
+/*	Operation Streetcar v.1, [2013-01-14],  
  *		part of WmDOT v.12.1
  *	Copyright © 2012-13 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
@@ -26,8 +26,8 @@
 
 class OpStreetcar {
 	function GetVersion()       { return 1; }
-	function GetRevision()		{ return 130101; }
-	function GetDate()          { return "2013-01-01"; }
+	function GetRevision()		{ return 130114; }
+	function GetDate()          { return "2013-01-14"; }
 	function GetName()          { return "Operation Streetcar"; }
 
 	_NextRun = null;
@@ -46,11 +46,13 @@ class OpStreetcar {
 		this._RoadType = AIRoad.ROADTYPE_TRAM;
 		this._PaxCargo = Helper.GetPAXCargo();
 		
-		this.Settings = this.Settings(this);
+		// this.Settings = this.Settings(this);
 		this.State = this.State(this);
+		
 		Log = OpLog();
 		Money = OpMoney();
 		Pathfinder = StreetcarPathfinder();
+		Pathfinder.PresetStreetcar() ;
 	}
 
 }
@@ -97,7 +99,7 @@ function OpStreetcar::Run()
 	local RatedTiles = RateTiles(this._StartTile);
 	RatedTiles = DiscountForAllStations(RatedTiles);
 	local NewStations = BuildStations(RatedTiles);
-	ManageRoutes(StationList);
+	AddRoutes(NewStations);
 
 	this._NextRun = AIController.GetTick() + 6500 / 4;	// run every three months
 
@@ -108,7 +110,7 @@ function OpStreetcar::RatedTiles(StartTile)
 	//	Given a starting tile, this returns an array of tiles connected to that
 	//	tile that will accept passengers
 	local AllTiles = AIList();
-	AllTiles.AddItem(StartTile, AITile.GetCargoAcceptance(StartTile, this._PaxCargo, 1, 1, 1));
+	AllTiles.AddItem(StartTile, AITile.GetCargoAcceptance(StartTile, this._PaxCargo, 1, 1, 3));
 	local AddedCheck = true;
 	do {
 		AddedCheck = false;
@@ -118,8 +120,8 @@ function OpStreetcar::RatedTiles(StartTile)
 			local BaseX = AIMap.GetTileX(Tile);
 			local BaseY = AIMap.GetTileY(Tile);
 
-			for (local ix = -3; ix < 4; ix++) {
-				for (local iy = -3; iy < 4; iy++) {
+			for (local ix = -3; ix <= 3; ix++) {
+				for (local iy = -3; iy <=3; iy++) {
 					if (!AllTiles.HasItem(AIMap.GetTileIndex(ix + BaseX, iy + BaseY)) && !NewTiles.HasItem(AIMap.GetTileIndex(ix + BaseX, iy + BaseY))) {
 						NewTiles.AddItem(AIMap.GetTileIndex(ix + BaseX, iy + BaseY));
 					}
@@ -128,7 +130,7 @@ function OpStreetcar::RatedTiles(StartTile)
 		}
 
 		foreach (Tile in NewTiles) {
-			local Score = AITile.GetCargoAcceptance(Tile, this._PaxCargo, 1, 1, 1);
+			local Score = AITile.GetCargoAcceptance(Tile, this._PaxCargo, 1, 1, 3);
 			if (Score >= 8) {
 				AllTiles.AddItem(Tile, Score);
 				AddedCheck = true;
@@ -166,8 +168,8 @@ function OpStreetcar::DiscountForStation(AllTiles, StationLocation)
 	local BaseX = AIMap.GetTileX(AIBaseStation.GetLocation(TestStation));
 	local BaseY = AIMap.GetTileY(AIBaseStation.GetLocation(TestStation));
 
-	for (local ix = -3; ix < 4; ix++) {
-		for (local iy = -3; iy < 4; iy++) {
+	for (local ix = -3; ix <= 3; ix++) {
+		for (local iy = -3; iy <= 3; iy++) {
 			if (AllTiles.HasItem(AIMap.GetTileIndex(ix + BaseX, iy + BaseY))) {
 				AllTiles.SetValue(TestStation, AllTiles.GetValue(TestStation)/2);
 			}
@@ -192,14 +194,41 @@ function OpStreetcar::BuildStations(AllTiles)
 		AllTiles.KeepAboveValue(7);
 		if (AllTiles.Count() > 0) {
 			local StationLocation = AllTiles.Begin();
-			if (BuildStreetcarStation(AllTiles.Begin())) {
+			if (MetaLib.Station.BuildStreetcarStation(StationLocation)) {
+				NewStations.AddItem(StationLocation);
 				AllTiles = DiscountForStation(AllTiles, StationLocation);
+				AllTiles.RemoveItem(StationLocation);
+				AllTiles.KeepAboveValue(7);
 			}
 			TryAgain = true;
 		} else {
 			TryAgain = false;
 		}
 	}
+	return NewStations;
 }
 
-function OpStreetcar::
+function OpStreetcar::AddRoutes(Stations)
+{
+	//	Takes a list of Stations and add routes between them
+	//	Actaully, it basically does up the pairs and then hands it off
+	//		to the route manager
+	//	Assumes Stations is an AIList
+	
+	Stations.Valuate(AITile.GetCargoAcceptance, this._PaxCargo, 1, 1, 3);
+	Stations.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
+	
+	//	split the list
+	local Delta = Stations.Count() / 2;
+	local StationsBottom = AIList();
+	StationsBottom.AddList(Stations);
+	StationsBottom.RemoveTop(Stations.Count() - Delta);
+	Stations.RemoveBottom(Delta);
+	
+	foreach MyStation in Stations {
+		RouteManger.AddRoute(MyStation, StationsBottom.Next(), this._PaxCargo, this.Pathfinder);
+	}
+	
+	return true;
+}
+	

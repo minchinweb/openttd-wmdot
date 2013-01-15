@@ -112,8 +112,8 @@ function ManShips::Run() {
 	Log.Note("Ship Manager running at tick " + AIController.GetTick() + ".",1);
 
 	//	reset counter
-	this._NextRun = AIController.GetTick() + this._SleepLength * 17;
-
+	this._NextRun = AIController.GetTick() + this._SleepLength * 17;	//	SleepLength in days
+	
 	for (local i=0; i < this._AllRoutes.len(); i++) {
 		//	Add Ships
 		Log.Note("Considering Route #" + i + "... " + AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) + " > " + this._AllRoutes[i]._Capacity + " ? " +(AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) > this._AllRoutes[i]._Capacity),3);

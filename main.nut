@@ -37,6 +37,7 @@ require("Ship.Manager.nut");		//	Ship Manager
 require("Event.Handler.nut");		//	Event Handler
 require("OpFreeway.nut");			//	Freeway Builder
 require("OpStreetcar.nut");			//	Operation Streetcar
+require("Streetcar.Manager.nut");	//	Streetcar (Route) Manager
 		
 
 class WmDOT extends AIController {
@@ -66,6 +67,7 @@ class WmDOT extends AIController {
 	Freeways = OpFreeway();
 	DLS = RoadPathfinder();
 	StreetCars = OpStreetcar();
+	Manager_Streetcars = ManStreetcars();
 
 	function Start();
 }
@@ -99,6 +101,7 @@ function WmDOT::Start() {
 	Log.Note("     " + Event.GetName() + ", v." + Event.GetVersion() + " r." + Event.GetRevision() + "  loaded!", 0);
 	Log.Note("     " + Freeways.GetName() + ", v." + Freeways.GetVersion() + " r." + Freeways.GetRevision() + "  loaded!", 0);
 	Log.Note("     " + StreetCars.GetName() + ", v." + StreetCars.GetVersion() + " r." + StreetCars.GetRevision() + "  loaded!", 0);
+	Log.Note("     " + Manager_Streetcars.GetName() + ", v." + Manager_Streetcars.GetVersion() + " r." + Manager_Streetcars.GetRevision() + "  loaded!", 0);
 	StartInfo();		//	AyStarInfo()
 						//	RoadPathfinder()
 						//	NeighbourhoodInfo()
@@ -128,15 +131,16 @@ function WmDOT::Start() {
 		Time = this.GetTick();
 //		Log.UpdateDebugLevel();
 
-		if (Time > Money.State.NextRun)			{ Money.Run(); }
-		if (Time > Towns.State.NextRun)			{ Towns.Run(); }
-		if (Time > CleanupCrew.State.NextRun)	{ CleanupCrew.Run(); }
-		if (Time > DOT.State.NextRun)			{ DOT.Run(); }
-		if (Time > Freeways.State.NextRun)		{ Freeways.Run(); }
-		if (Time > StreetCars.State.NextRun)	{ StreetCars.Run(); }
-		if (Time > Hibernia.State.NextRun)		{ Hibernia.Run(); }
-		if (Time > Manager_Ships.State.NextRun)	{ Manager_Ships.Run(); }
-		if (Time > Event.State.NextRun)			{ Event.Run(); }
+		if (Time > Money.State.NextRun)					{ Money.Run(); }
+		if (Time > Towns.State.NextRun)					{ Towns.Run(); }
+		if (Time > CleanupCrew.State.NextRun)			{ CleanupCrew.Run(); }
+		if (Time > DOT.State.NextRun)					{ DOT.Run(); }
+		if (Time > Freeways.State.NextRun)				{ Freeways.Run(); }
+		if (Time > StreetCars.State.NextRun)			{ StreetCars.Run(); }
+		if (Time > Hibernia.State.NextRun)				{ Hibernia.Run(); }
+		if (Time > Manager_Ships.State.NextRun)			{ Manager_Ships.Run(); }
+		if (Time > Manager_Streetcars.State.NextRun)	{ Manager_Streetcars.Run(); }
+		if (Time > Event.State.NextRun)					{ Event.Run(); }
 
 		this.Sleep(1);
 	}
@@ -525,9 +529,8 @@ function WmDOT::TheGreatLinkUp() {
 	Manager_Ships.LinkUp();
 	Event.LinkUp();
 	Freeways.LinkUp();
-	Hibernia.StartPathfinder();
-	Log.Note("The Great Link Up is Complete!", 1);
-	Log.Note("", 1);
+	Log.Note("The Great Link Up is Complete!",1);
+	Log.Note("",1);
 }
 
 
