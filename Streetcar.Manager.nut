@@ -1,4 +1,4 @@
-﻿/*	Streetcar Manager v.3, [2013-01-14]
+﻿/*	Streetcar Manager v.3, [2013-01-16]
  *		part of WmDOT v.12.1
  *		modified verision of Ship Manager v.2
  *	Copyright © 2012-13 by W. Minchin. For more info,
@@ -21,8 +21,8 @@
  
 class ManStreetcars {
 	function GetVersion()       { return 3; }
-	function GetRevision()		{ return 130114; }
-	function GetDate()          { return "2013-01-14"; }
+	function GetRevision()		{ return 130116; }
+	function GetDate()          { return "2013-01-16"; }
 	function GetName()          { return "Streetcar Manager"; }
 	
 	
@@ -242,9 +242,35 @@ function ManStreetcars::PickEngine();
 {
 	//	picks the 'engine' to use
 	
-	// XX
+	//	start with all engines
+	local AllEngines = AIEngineList(AIVehicle.VT_ROAD);
+	//	only streetcars
+	AllEngines.Valuate(AIEngine.GetRoadType);
+	AllEngines.KeepValue(AIRoad.ROADTYPE_TRAM);
+	//	only ones that can haul passengers
+	AllEngines.Valuate(AIEngine.CanRefitCargo, StreetCars._PaxCargo);
+	AllEngines.KeepValue(true);
+	//	rate the remaining engines
+	AllEngines.Valuate(RateEngines);
 	
+	//	pick highest rated
+	AllEngines.Sort(AIList.SORT_BY_VALUE, AIList.SORT_ASCENDING);
+	this._UseEngine = AllEngines.Begin();
 	return this._UseEngineID;
+}
+
+function ManStreetcars::RateEngines(EngineID)
+{
+	//	attempts to find the best rated engine
+	
+	local Score = AIEngine.GetCapacity(EngineID).tofloat() * AIEngine.GetMaxSpeed(EngineID).tofloat();
+	local Cost = AIEngine.GetPrice(EngineID).tofloat() / AIEngine.GetMaxAge(EngineID).tofloat();
+	Cost += AIEngine.GetRunningCost(EngineID).tofloat();
+	Score = Score / Cost;
+	
+	//	discount articulated??
+	
+	return Score;
 }
 
 function ManStreetcars::GetDepot(Station, Pathfinder)
@@ -253,17 +279,64 @@ function ManStreetcars::GetDepot(Station, Pathfinder)
 	//	will build a depot if there isn't one close enough
 	//	if it builds the depot, will build a link from the depot to the Station
 	
+	//	set roadtype
+	AIRoad.SetCurrentRoadType(AIRoad.ROADTYPE_TRAM);
+	
 	local myDepot;
+	local StationLocation = AIStation.GetLocation(Station);
+	local offsets = [AIMap.GetTileIndex(0, 1), AIMap.GetTileIndex(0, -1),
+		                 AIMap.GetTileIndex(1, 0), AIMap.GetTileIndex(-1, 0)];
 	
-	// XX
-	// this._MaxStationSpread
+	// look for an exisiting depot close enought
+	local AllDepots = AIDepotList(AITile.TRANSPORT_ROAD);
+	AllDepots.Valuate(AIRoad.HasRoadType, AIRoad.ROADTYPE_TRAM);
+	AllDepots.KeepValue(true);
+	AllDepots.Valuate(AIMap.DistanceManhattan, StationLocation);
+	AllDepots.KeepBelowValue(this._MaxDepotSpread + 1);
 	
-	Pathfinder.InitializePath(Station, myDepot);
-	Pathfinder.FindPath();
-	Money.FundsRequest(Pathfinder.GetBuildCost() * 1.1);
-	Pathfinder.BuildPath();
+	if (AllDepots.Count() > 0) {
+		//	pick the closest depot
+		AllDepots.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
+		myDepot = AllDepots.Begin();
+	} else {
+		//	build new one
+		local Walker = MetaLib.SpiralWalker();
+		Walker.Start(StationLocation);
+		
+		local KeepTrying = true;
+		local TestMode = AITestMode();
+		while(KeepTrying) {
+			local myTile = Walker.Walk();
+			local frontTile;
+			
+			//	Check if we can build here
+			if (AITile.IsBuildable(myTile)) {
+				//	check the four neighbours for being front tiles
+				for (local i=0; i > offsets.len(); i++) {
+					frontTile = myTile + offsets[i];
+					//	if we can build between the front tile and the proposed depot tile...
+					if (AIRoad.BuildRoad(myTile, frontTile)) {
+						//	run the pathfinder from the front tile to the station
+						Pathfinder.InitializePath(Station, myTile);
+						Pathfinder.PresetStreetcar();
+						Pathfinder.Set.max_cost(Pathfinder.get.tile() * 2 * AITile.DistanceManhattan(Station, myTile));
+						Pathfinder.FindPath();
+						
+						//	See if the pathfinder was successful
+						if (Pathfinder.GetPathLength() > 1) {
+							//	if yes, build everything
+							Money.FundsRequest(Pathfinder.GetBuildCost() * 1.1);
+							AIRoad.BuildRoad(myTile, frontTile);
+							AIRoad.BuildRoadDepot(myTile, frontTile);
+							Pathfinder.BuildPath();
+							myDepot = myTile;
+							KeepTrying = false;
+						}
+					}
+				}
+			}
+		}
+	}
 	
-	// XX
-	
-	return true;
+	return myDepot;
 }
