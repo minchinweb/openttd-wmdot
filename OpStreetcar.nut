@@ -96,46 +96,75 @@ function OpStreetcar::LinkUp()
 
 function OpStreetcar::Run()
 {
+	Log.Note("Streetcar Manager running at tick " + AIController.GetTick() + ".",1);
+	Log.Note("Rating Tiles...", 2);
 	local RatedTiles = RateTiles(this._StartTile);
+	Log.Note(RatedTiles.Count() + " tiles rated. Discounting tiles for existing stations.", 2);
 	RatedTiles = DiscountForAllStations(RatedTiles);
+	Log.Note("Add new stations...", 2);
 	local NewStations = BuildStations(RatedTiles);
+	Log.Note(NewStations.len() + " stations added. Adding Routes...", 2);
 	AddRoutes(NewStations);
 
 	this._NextRun = AIController.GetTick() + 6500 / 4;	// run every three months
-
+	Log.Note("Routes added. Next run set to tick " + this._NextRun, 2);
+	
+	return;
 }
 
-function OpStreetcar::RatedTiles(StartTile)
+function OpStreetcar::RateTiles(StartTile)
 {
 	//	Given a starting tile, this returns an array of tiles connected to that
 	//	tile that will accept passengers
 	local AllTiles = AIList();
 	AllTiles.AddItem(StartTile, AITile.GetCargoAcceptance(StartTile, this._PaxCargo, 1, 1, 3));
+	Log.Note("Starting at tile:" + Array.ToStringTiles1D([StartTile]) + " score: " + AITile.GetCargoAcceptance(StartTile, this._PaxCargo, 1, 1, 3) + "  " + AllTiles.Count(), 3);
 	local AddedCheck = true;
 	do {
 		AddedCheck = false;
-		local NewTiles = AIList();
+		local NewTiles = AITileList();
 		//	Generate a list of all tiles within 3 tiles of the enteries on "AllTiles"
-		foreach (Tile in AllTiles) {
+		local FirstLoop = true;
+		do {
+			local Tile;
+			if (FirstLoop == true) {
+				Tile = AllTiles.Begin();
+				FirstLoop = false;
+			} else {
+				Tile = AllTiles.Next();
+			}
 			local BaseX = AIMap.GetTileX(Tile);
 			local BaseY = AIMap.GetTileY(Tile);
+			Log.Note("BaseTile" + Array.ToStringTiles1D([Tile]) + " x=" + BaseX + " y=" + BaseY, 5);
 
 			for (local ix = -3; ix <= 3; ix++) {
 				for (local iy = -3; iy <=3; iy++) {
-					if (!AllTiles.HasItem(AIMap.GetTileIndex(ix + BaseX, iy + BaseY)) && !NewTiles.HasItem(AIMap.GetTileIndex(ix + BaseX, iy + BaseY))) {
-						NewTiles.AddItem(AIMap.GetTileIndex(ix + BaseX, iy + BaseY));
+					local NewTile = AIMap.GetTileIndex(ix + BaseX, iy + BaseY);
+					if (!AllTiles.HasItem(NewTile) && !NewTiles.HasItem(NewTile)) {
+						NewTiles.AddItem(NewTile, 0);
 					}
+					Log.Note("Testing Tile " + ix + " " + iy + " = " + Array.ToStringTiles1D([NewTile]) + " : " +!AllTiles.HasItem(NewTile) + " && " + !NewTiles.HasItem(NewTile) + "  :: " + NewTiles.Count(), 5);
 				}
 			}
-		}
-
-		foreach (Tile in NewTiles) {
+		} while (!AllTiles.IsEnd())
+		
+		FirstLoop = true;
+		do {
+			local Tile;
+			if (FirstLoop == true) {
+				Tile = NewTiles.Begin();
+				FirstLoop = false;
+			} else {
+				Tile = NewTiles.Next();
+			}
+			
 			local Score = AITile.GetCargoAcceptance(Tile, this._PaxCargo, 1, 1, 3);
+			Log.Note("Checking tile" + Array.ToStringTiles1D([Tile]) + " score: " + Score, 4);
 			if (Score >= 8) {
 				AllTiles.AddItem(Tile, Score);
 				AddedCheck = true;
 			}
-		}
+		} while (!NewTiles.IsEnd())
 	} while (AddedCheck == true)
 
 	return AllTiles;
@@ -225,7 +254,7 @@ function OpStreetcar::AddRoutes(Stations)
 	StationsBottom.RemoveTop(Stations.Count() - Delta);
 	Stations.RemoveBottom(Delta);
 	
-	foreach MyStation in Stations {
+	foreach (MyStation in Stations) {
 		RouteManger.AddRoute(MyStation, StationsBottom.Next(), this._PaxCargo, this.Pathfinder);
 	}
 	

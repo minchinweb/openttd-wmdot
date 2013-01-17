@@ -43,8 +43,8 @@ class ManStreetcars {
 		this._SleepLength = 30;
 		this._AllRoutes = [];
 		this._StreetcarsToSell = [];
-		this._UseEngineID = this.PickEngine();
-		this._MaxStationSpread = 15;
+		// this._UseEngineID = this.PickEngine();
+		this._MaxDepotSpread = 15;
 		
 		this.Settings = this.Settings(this);
 		this.State = this.State(this);
@@ -126,6 +126,8 @@ function ManStreetcars::LinkUp()
  
 function ManStreetcars::Run() {
 	Log.Note("Streetcar Manager running at tick " + AIController.GetTick() + ".",1);
+	
+	this._UseEngineID = this.PickEngine(Helper.GetPAXCargo());
 	
 	//	reset counter
 	this._NextRun = AIController.GetTick() + this._SleepLength * 17;	//	SleepLength in days
@@ -238,7 +240,7 @@ function ManStreetcars::AddRoute (StartStation, EndStation, CargoNo, Pathfinder)
 	}
 }
 
-function ManStreetcars::PickEngine();
+function ManStreetcars::PickEngine(Cargo)
 {
 	//	picks the 'engine' to use
 	
@@ -248,7 +250,7 @@ function ManStreetcars::PickEngine();
 	AllEngines.Valuate(AIEngine.GetRoadType);
 	AllEngines.KeepValue(AIRoad.ROADTYPE_TRAM);
 	//	only ones that can haul passengers
-	AllEngines.Valuate(AIEngine.CanRefitCargo, StreetCars._PaxCargo);
+	AllEngines.Valuate(AIEngine.CanRefitCargo, Cargo);
 	AllEngines.KeepValue(true);
 	//	rate the remaining engines
 	AllEngines.Valuate(RateEngines);
