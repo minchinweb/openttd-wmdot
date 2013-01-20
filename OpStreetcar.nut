@@ -1,4 +1,4 @@
-/*	Operation Streetcar v.1, [2013-01-14],  
+/*	Operation Streetcar v.1, [2013-01-19],  
  *		part of WmDOT v.12.1
  *	Copyright © 2012-13 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
@@ -26,8 +26,8 @@
 
 class OpStreetcar {
 	function GetVersion()       { return 1; }
-	function GetRevision()		{ return 130114; }
-	function GetDate()          { return "2013-01-14"; }
+	function GetRevision()		{ return 130119; }
+	function GetDate()          { return "2013-01-19"; }
 	function GetName()          { return "Operation Streetcar"; }
 
 	_NextRun = null;
@@ -35,6 +35,7 @@ class OpStreetcar {
 	_tiles = null;
 	_StartTile = null;
 	_PaxCargo = null;
+	_MinTileScore = null;
 
 	Log = null;
 	Money = null;
@@ -45,6 +46,7 @@ class OpStreetcar {
 		this._NextRun = 1;
 		this._RoadType = AIRoad.ROADTYPE_TRAM;
 		this._PaxCargo = Helper.GetPAXCargo();
+		this._MinTileScore = 8;
 		
 		// this.Settings = this.Settings(this);
 		this.State = this.State(this);
@@ -117,15 +119,21 @@ function OpStreetcar::RateTiles(StartTile)
 	//	Given a starting tile, this returns an array of tiles connected to that
 	//	tile that will accept passengers
 	local AllTiles = AIList();
+	local IgnoredTiles = AIList();
 	AllTiles.AddItem(StartTile, AITile.GetCargoAcceptance(StartTile, this._PaxCargo, 1, 1, 3));
 	Log.Note("Starting at tile:" + Array.ToStringTiles1D([StartTile]) + " score: " + AITile.GetCargoAcceptance(StartTile, this._PaxCargo, 1, 1, 3) + "  " + AllTiles.Count(), 3);
 	local AddedCheck = true;
+	local i = 0;
 	do {
+		// Log.Note("do-while loop #1...", 7);
+		i++;
 		AddedCheck = false;
 		local NewTiles = AITileList();
 		//	Generate a list of all tiles within 3 tiles of the enteries on "AllTiles"
 		local FirstLoop = true;
+		local j = 0;
 		do {
+			j++;
 			local Tile;
 			if (FirstLoop == true) {
 				Tile = AllTiles.Begin();
@@ -135,21 +143,26 @@ function OpStreetcar::RateTiles(StartTile)
 			}
 			local BaseX = AIMap.GetTileX(Tile);
 			local BaseY = AIMap.GetTileY(Tile);
-			Log.Note("BaseTile" + Array.ToStringTiles1D([Tile]) + " x=" + BaseX + " y=" + BaseY, 5);
+			Log.Note("BaseTile" + Array.ToStringTiles1D([Tile]) + " x=" + BaseX + " y=" + BaseY, 7);
 
 			for (local ix = -3; ix <= 3; ix++) {
 				for (local iy = -3; iy <=3; iy++) {
 					local NewTile = AIMap.GetTileIndex(ix + BaseX, iy + BaseY);
-					if (!AllTiles.HasItem(NewTile) && !NewTiles.HasItem(NewTile)) {
+					if (!AllTiles.HasItem(NewTile) && !NewTiles.HasItem(NewTile) && !IgnoredTiles.HasItem(NewTile)) {
 						NewTiles.AddItem(NewTile, 0);
+						// Log.Note("Testing Tile " + ix + " " + iy + " = " + Array.ToStringTiles1D([NewTile]) + " added", 6);
+						// Log.Sign(NewTile, i + " " + j + " " + ix + " " + iy, 7); 
+					} else {
+						// Log.Note("Testing Tile " + ix + " " + iy + " = " + Array.ToStringTiles1D([NewTile]) + " : " +!AllTiles.HasItem(NewTile) + " && " + !NewTiles.HasItem(NewTile) + " && " + !IgnoredTiles.HasItem(NewTile) + "  :: " + NewTiles.Count(), 7);
+						IgnoredTiles.AddItem(NewTile, 0);
 					}
-					Log.Note("Testing Tile " + ix + " " + iy + " = " + Array.ToStringTiles1D([NewTile]) + " : " +!AllTiles.HasItem(NewTile) + " && " + !NewTiles.HasItem(NewTile) + "  :: " + NewTiles.Count(), 5);
 				}
 			}
 		} while (!AllTiles.IsEnd())
 		
 		FirstLoop = true;
 		do {
+			// Log.Note("do-while loop #2...", 7);
 			local Tile;
 			if (FirstLoop == true) {
 				Tile = NewTiles.Begin();
@@ -159,8 +172,8 @@ function OpStreetcar::RateTiles(StartTile)
 			}
 			
 			local Score = AITile.GetCargoAcceptance(Tile, this._PaxCargo, 1, 1, 3);
-			Log.Note("Checking tile" + Array.ToStringTiles1D([Tile]) + " score: " + Score, 4);
-			if (Score >= 8) {
+			// Log.Note("Checking tile" + Array.ToStringTiles1D([Tile]) + " score: " + Score + " " + (Score >= this._MinTileScore), 4);
+			if (Score >= this._MinTileScore) {
 				AllTiles.AddItem(Tile, Score);
 				AddedCheck = true;
 			}
