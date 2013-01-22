@@ -1,4 +1,4 @@
-/*	Operation Streetcar v.1, [2013-01-19],  
+/*	Operation Streetcar v.1, [2013-01-21],  
  *		part of WmDOT v.12.1
  *	Copyright © 2012-13 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
@@ -26,8 +26,8 @@
 
 class OpStreetcar {
 	function GetVersion()       { return 1; }
-	function GetRevision()		{ return 130119; }
-	function GetDate()          { return "2013-01-19"; }
+	function GetRevision()		{ return 130121; }
+	function GetDate()          { return "2013-01-21"; }
 	function GetName()          { return "Operation Streetcar"; }
 
 	_NextRun = null;
@@ -189,7 +189,7 @@ function OpStreetcar::DiscountForAllStations(AllTiles)
 	//	for every tiles that falls within the catchment area of a station, the score is cut in half
 
 	local AllStations;
-	if (this._PaxCargo = Helper.GetPAXCargo()) {
+	if (this._PaxCargo == Helper.GetPAXCargo()) {
 		AllStations = AIStationList(AIStation.STATION_BUS_STOP);
 	} else {
 		AllStations = AIStationList(AIStation.STATION_TRUCK_STOP); 
@@ -207,12 +207,13 @@ function OpStreetcar::DiscountForStation(AllTiles, StationLocation)
 	//	takes a list of tiles
 	//	for every tiles that falls within the catchment area of the 'Station Location', the score is cut in half
 
-	local BaseX = AIMap.GetTileX(AIBaseStation.GetLocation(TestStation));
-	local BaseY = AIMap.GetTileY(AIBaseStation.GetLocation(TestStation));
+	local BaseX = AIMap.GetTileX(AIBaseStation.GetLocation(StationLocation));
+	local BaseY = AIMap.GetTileY(AIBaseStation.GetLocation(StationLocation));
 
 	for (local ix = -3; ix <= 3; ix++) {
 		for (local iy = -3; iy <= 3; iy++) {
-			if (AllTiles.HasItem(AIMap.GetTileIndex(ix + BaseX, iy + BaseY))) {
+			local TestStation = AIMap.GetTileIndex(ix + BaseX, iy + BaseY);
+			if (AllTiles.HasItem(TestStation)) {
 				AllTiles.SetValue(TestStation, AllTiles.GetValue(TestStation)/2);
 			}
 		}
@@ -227,20 +228,29 @@ function OpStreetcar::BuildStations(AllTiles)
 	//	Builds stations on the best rated tiles
 	//	After a station is built, it cuts the tiles in the station's catchment area in half
 	//	Keeps going until there are no more tiles with a score better than 8 (full acceptance)
+	
+	//	TO-DO:	Only build station if it can connect to town core
 
 	local TryAgain = true;
 	local NewStations = AIList();
 	while (TryAgain) {
+		// Log.Note("while-do loop #3", 7);
 		TryAgain = false;
 		AllTiles.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
 		AllTiles.KeepAboveValue(7);
+		// Log.Note("AllTiles " + AllTiles.Count(), 6);
 		if (AllTiles.Count() > 0) {
 			local StationLocation = AllTiles.Begin();
+			Log.Note("StationLocation" + Array.ToStringTiles1D([StationLocation]), 7);
 			if (MetaLib.Station.BuildStreetcarStation(StationLocation)) {
-				NewStations.AddItem(StationLocation);
+				NewStations.AddItem(StationLocation, 0);
 				AllTiles = DiscountForStation(AllTiles, StationLocation);
 				AllTiles.RemoveItem(StationLocation);
-				AllTiles.KeepAboveValue(7);
+				AllTiles.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
+				AllTiles.KeepAboveValue(this._MinTileScore - 1);
+				Log.Note("Station built at" + Array.ToStringTiles1D([StationLocation]), 3);
+			} else {
+				AllTiles.RemoveItem(StationLocation);
 			}
 			TryAgain = true;
 		} else {
