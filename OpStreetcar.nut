@@ -1,4 +1,4 @@
-/*	Operation Streetcar v.1, [2013-01-21],  
+/*	Operation Streetcar v.1, [2013-01-22],  
  *		part of WmDOT v.12.1
  *	Copyright © 2012-13 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
@@ -26,8 +26,8 @@
 
 class OpStreetcar {
 	function GetVersion()       { return 1; }
-	function GetRevision()		{ return 130121; }
-	function GetDate()          { return "2013-01-21"; }
+	function GetRevision()		{ return 130122; }
+	function GetDate()          { return "2013-01-22"; }
 	function GetName()          { return "Operation Streetcar"; }
 
 	_NextRun = null;
@@ -40,6 +40,7 @@ class OpStreetcar {
 	Log = null;
 	Money = null;
 	Pathfinder = null;
+	RouteManger = null;
 
 	constructor()
 	{
@@ -93,6 +94,7 @@ function OpStreetcar::LinkUp()
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
 	// this.Pathfinder = WmDOT.DLS;
+	this.RouteManger = WmDOT.Manager_Streetcars;
 	Log.Note(this.GetName() + " linked up!", 3);
 }
 
@@ -105,7 +107,7 @@ function OpStreetcar::Run()
 	RatedTiles = DiscountForAllStations(RatedTiles);
 	Log.Note("Add new stations...", 2);
 	local NewStations = BuildStations(RatedTiles);
-	Log.Note(NewStations.len() + " stations added. Adding Routes...", 2);
+	Log.Note(NewStations.Count() + " stations added. Adding Routes...", 2);
 	AddRoutes(NewStations);
 
 	this._NextRun = AIController.GetTick() + 6500 / 4;	// run every three months
@@ -205,20 +207,37 @@ function OpStreetcar::DiscountForAllStations(AllTiles)
 function OpStreetcar::DiscountForStation(AllTiles, StationLocation)
 {
 	//	takes a list of tiles
-	//	for every tiles that falls within the catchment area of the 'Station Location', the score is cut in half
+	//	for every tiles that falls within the catchment area of the 'Station Location', the score reduced by 8 and then is cut in half
+	//	and every tile within 2 tiles is rated zero
 
-	local BaseX = AIMap.GetTileX(AIBaseStation.GetLocation(StationLocation));
-	local BaseY = AIMap.GetTileY(AIBaseStation.GetLocation(StationLocation));
+	Log.Note("DiscountForStation() " + AllTiles.Count()  + ", " + Array.ToStringTiles1D([StationLocation]), 7);
+	local BaseX = AIMap.GetTileX(StationLocation);
+	local BaseY = AIMap.GetTileY(StationLocation);
 
-	for (local ix = -3; ix <= 3; ix++) {
-		for (local iy = -3; iy <= 3; iy++) {
-			local TestStation = AIMap.GetTileIndex(ix + BaseX, iy + BaseY);
-			if (AllTiles.HasItem(TestStation)) {
-				AllTiles.SetValue(TestStation, AllTiles.GetValue(TestStation)/2);
+	//	every tile within 2 tiles is rated zero (actaully, we remove them from the list)
+	for (local ix = -2; ix <= 2; ix++) {
+		for (local iy = -2; iy <= 2; iy++) {
+			local Test = AIMap.GetTileIndex(ix + BaseX, iy + BaseY);
+			// Log.Note("    ix=" + ix + "; iy=" + iy + "; Test=" + Array.ToStringTiles1D([Test]) + " : " + AllTiles.HasItem(Test), 7);
+			if (AllTiles.HasItem(Test)) {
+				AllTiles.RemoveItem(Test);
+				// Log.Sign(Test, "r", 7);
 			}
 		}
 	}
-
+	
+	//	for every tiles that falls within the catchment area of the 'Station Location',
+	//		the score reduced by 8 and then is cut in half	
+	for (local ix = -3; ix <= 3; ix++) {
+		for (local iy = -3; iy <= 3; iy++) {
+			local Test = AIMap.GetTileIndex(ix + BaseX, iy + BaseY);
+			if (AllTiles.HasItem(Test)) {
+				AllTiles.SetValue(Test, (AllTiles.GetValue(Test) - 8)/2);
+			}
+		}
+	}
+	
+	Log.Note("    return: " + AllTiles.Count(), 7);
 	return AllTiles;
 }
 
@@ -241,7 +260,7 @@ function OpStreetcar::BuildStations(AllTiles)
 		// Log.Note("AllTiles " + AllTiles.Count(), 6);
 		if (AllTiles.Count() > 0) {
 			local StationLocation = AllTiles.Begin();
-			Log.Note("StationLocation" + Array.ToStringTiles1D([StationLocation]), 7);
+			// Log.Note("StationLocation" + Array.ToStringTiles1D([StationLocation]), 7);
 			if (MetaLib.Station.BuildStreetcarStation(StationLocation)) {
 				NewStations.AddItem(StationLocation, 0);
 				AllTiles = DiscountForStation(AllTiles, StationLocation);

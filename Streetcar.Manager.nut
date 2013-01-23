@@ -176,7 +176,7 @@ function ManStreetcars::Run() {
 	}
 }
 
-function ManStreetcars::AddRoute (StartStation, EndStation, CargoNo, Pathfinder)
+function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder)
 {
 	//	this will build the streetcar as well
 	
