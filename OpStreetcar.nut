@@ -40,14 +40,14 @@ class OpStreetcar {
 	Log = null;
 	Money = null;
 	Pathfinder = null;
-	RouteManger = null;
+	RouteManager = null;
 
 	constructor()
 	{
 		this._NextRun = 1;
 		this._RoadType = AIRoad.ROADTYPE_TRAM;
 		this._PaxCargo = Helper.GetPAXCargo();
-		this._MinTileScore = 8;
+		this._MinTileScore = 17;
 		
 		// this.Settings = this.Settings(this);
 		this.State = this.State(this);
@@ -94,7 +94,7 @@ function OpStreetcar::LinkUp()
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
 	// this.Pathfinder = WmDOT.DLS;
-	this.RouteManger = WmDOT.Manager_Streetcars;
+	this.RouteManager = WmDOT.Manager_Streetcars;
 	Log.Note(this.GetName() + " linked up!", 3);
 }
 
@@ -145,7 +145,7 @@ function OpStreetcar::RateTiles(StartTile)
 			}
 			local BaseX = AIMap.GetTileX(Tile);
 			local BaseY = AIMap.GetTileY(Tile);
-			Log.Note("BaseTile" + Array.ToStringTiles1D([Tile]) + " x=" + BaseX + " y=" + BaseY, 7);
+			// Log.Note("BaseTile" + Array.ToStringTiles1D([Tile]) + " x=" + BaseX + " y=" + BaseY, 7);
 
 			for (local ix = -3; ix <= 3; ix++) {
 				for (local iy = -3; iy <=3; iy++) {
@@ -297,7 +297,7 @@ function OpStreetcar::AddRoutes(Stations)
 	Stations.RemoveBottom(Delta);
 	
 	foreach (MyStation in Stations) {
-		RouteManger.AddRoute(MyStation, StationsBottom.Next(), this._PaxCargo, this.Pathfinder);
+		this.RouteManager.AddRoute(MyStation, StationsBottom.Next(), this._PaxCargo, this.Pathfinder);
 	}
 	
 	return true;

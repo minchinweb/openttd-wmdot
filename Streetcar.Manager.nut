@@ -185,8 +185,8 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder)
 	TempRoute._DestinationStation = EndStation;
 	
 	//	build link between StartStation and EndStation
-	Pathfinder.InitializePath(StationStation, EndStation);
-	Pathfinder.FindPath();
+	Pathfinder.InitializePath([StartStation], [EndStation]);
+	Pathfinder.FindPath(5000);
 	Money.FundsRequest(Pathfinder.GetBuildCost() * 1.1);
 	Pathfinder.BuildPath();
 

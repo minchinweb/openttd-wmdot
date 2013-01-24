@@ -528,6 +528,8 @@ function WmDOT::TheGreatLinkUp() {
 	Manager_Ships.LinkUp();
 	Event.LinkUp();
 	Freeways.LinkUp();
+	StreetCars.LinkUp();
+	Manager_Streetcars.LinkUp();
 	Log.Note("The Great Link Up is Complete!",1);
 	Log.Note("",1);
 }
