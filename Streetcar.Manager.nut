@@ -187,55 +187,61 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder)
 	//	build link between StartStation and EndStation
 	Pathfinder.InitializePath([StartStation], [EndStation]);
 	Pathfinder.FindPath(5000);
-	Money.FundsRequest(Pathfinder.GetBuildCost() * 1.1);
-	Pathfinder.BuildPath();
+	if (Pathfinder.GetPath() != null) {
+		Money.FundsRequest(Pathfinder.GetBuildCost() * 1.1);
+		Pathfinder.BuildPath();
 
-	TempRoute._EngineID = this._UseEngineID;
-	TempRoute._Depot = GetDepot(StartStation, Pathfinder);
-	
-	//	build streetcar
-	local RvID = AIVehicle.BuildVehicle(TempRoute._Depot, TempRoute._EngineID);
-	
-	//	give orders
-	if (AIVehicle.IsValidVehicle(RvID)) {
-		AIVehicle.RefitVehicle(RvID, CargoNo);
-		Log.Note("Added Vehicle № " + RvID + ".", 4);
+		TempRoute._EngineID = this._UseEngineID;
+		TempRoute._Depot = GetDepot(StartStation, Pathfinder);
 		
-		///	Give Orders!
-		//	start station; full load here
-		AIOrder.AppendOrder(RvID, TempRoute._SourceStation, AIOrder.OF_FULL_LOAD);
-		Log.Note("Order (Start): " + RvID + " : " + Array.ToStringTiles1D([AIStation.GetLocation(TempRoute._SourceStation)]) + ".", 5);
+		//	build streetcar
+		local RvID = AIVehicle.BuildVehicle(TempRoute._Depot, TempRoute._EngineID);
 		
-		//	end station
-		AIOrder.AppendOrder(RvID, TempRoute._DestinationStation, AIOrder.OF_NONE);
-		Log.Note("Order (End): " + RvID + " : " + Array.ToStringTiles1D([AIStation.GetLocation(TempRoute._DestinationStation)]) + ".", 5);
-	
-		// send it on it's merry way!!!
-		AIVehicle.StartStopVehicle(RvID);
-	
-		TempRoute._Capacity = AIVehicle.GetCapacity(RvID, CargoNo);
-		TempRoute._Cargo = CargoNo;
+		//	give orders
+		if (AIVehicle.IsValidVehicle(RvID)) {
+			AIVehicle.RefitVehicle(RvID, CargoNo);
+			Log.Note("Added Vehicle № " + RvID + ".", 4);
+			
+			///	Give Orders!
+			//	start station; full load here
+			AIOrder.AppendOrder(RvID, TempRoute._SourceStation, AIOrder.OF_FULL_LOAD);
+			Log.Note("Order (Start): " + RvID + " : " + Array.ToStringTiles1D([AIStation.GetLocation(TempRoute._SourceStation)]) + ".", 5);
+			
+			//	end station
+			AIOrder.AppendOrder(RvID, TempRoute._DestinationStation, AIOrder.OF_NONE);
+			Log.Note("Order (End): " + RvID + " : " + Array.ToStringTiles1D([AIStation.GetLocation(TempRoute._DestinationStation)]) + ".", 5);
 		
-		// Name Streetcar - format: Town_Name Cargo R[Route Number]-[incremented number]
-		local temp_name = "";
-		temp_name += AITown.GetName(AIStation.GetNearestTown(TempRoute._SourceStation));
-		if (temp_name.len() > 19) { temp_name = temp_name.slice(0,19); }	//	limit town name part to 19 characters
-		temp_name = temp_name + " " + AICargo.GetCargoLabel(CargoNo) + " R";
-		temp_name += (this._AllRoutes.len() + 1) + "-1";
-		AIVehicle.SetName(RvID, temp_name);
+			// send it on it's merry way!!!
+			AIVehicle.StartStopVehicle(RvID);
 		
-		// Create a Group for the route
-		local group_number = AIGroup.CreateGroup(AIVehicle.VT_ROAD);
-		AIGroup.SetName(group_number, "Route " + (this._AllRoutes.len() + 1));
-		AIGroup.MoveVehicle(group_number, RvID);
-		TempRoute._GroupID = group_number;
-		
-		TempRoute._LastUpdate = WmDOT.GetTick();
-		
-		this._AllRoutes.push(TempRoute);
-		Log.Note("Route added! Road Vehicle " + TempRoute._EngineID + "; " + TempRoute._Capacity + " tons of " + AICargo.GetCargoLabel(TempRoute._Cargo) + "; starting at " + TempRoute._SourceStation + "; build at " + TempRoute._Depot + "; updated at tick " + TempRoute._LastUpdate + ".", 4);
-		return true;
+			TempRoute._Capacity = AIVehicle.GetCapacity(RvID, CargoNo);
+			TempRoute._Cargo = CargoNo;
+			
+			// Name Streetcar - format: Town_Name Cargo R[Route Number]-[incremented number]
+			local temp_name = "";
+			temp_name += AITown.GetName(AIStation.GetNearestTown(TempRoute._SourceStation));
+			if (temp_name.len() > 19) { temp_name = temp_name.slice(0,19); }	//	limit town name part to 19 characters
+			temp_name = temp_name + " " + AICargo.GetCargoLabel(CargoNo) + " R";
+			temp_name += (this._AllRoutes.len() + 1) + "-1";
+			AIVehicle.SetName(RvID, temp_name);
+			
+			// Create a Group for the route
+			local group_number = AIGroup.CreateGroup(AIVehicle.VT_ROAD);
+			AIGroup.SetName(group_number, "Route " + (this._AllRoutes.len() + 1));
+			AIGroup.MoveVehicle(group_number, RvID);
+			TempRoute._GroupID = group_number;
+			
+			TempRoute._LastUpdate = WmDOT.GetTick();
+			
+			this._AllRoutes.push(TempRoute);
+			Log.Note("Route added! Road Vehicle " + TempRoute._EngineID + "; " + TempRoute._Capacity + " tons of " + AICargo.GetCargoLabel(TempRoute._Cargo) + "; starting at " + TempRoute._SourceStation + "; build at " + TempRoute._Depot + "; updated at tick " + TempRoute._LastUpdate + ".", 4);
+			return true;
+		} else {
+			Log.Warning("     Failed to build vehicle...aborting route building");
+			return false;
+		}
 	} else {
+		Log.Warning("     Null path...aborting route building");
 		return false;
 	}
 }
