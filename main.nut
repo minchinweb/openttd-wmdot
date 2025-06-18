@@ -423,8 +423,7 @@ function WmDOT::BuildWmHQ()
 	}
 
 	WmTownList.Valuate(AITown.GetPopulation);	
-	local HQTown = AITown();	
-	HQTown = WmTownList.Begin();
+	local HQTown = WmTownList.Begin();
 	local OriginalHQTown = HQTown;
 	
 	while (Array.ContainedIn1D(DotHQList, HQTown)) {
