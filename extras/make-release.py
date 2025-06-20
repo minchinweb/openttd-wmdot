@@ -19,24 +19,25 @@
 """This script is a Python script to generate a tar file of WmDOT for
 upload to BaNaNaS. v2 [2014-03-03]"""
 
-import os
-from os.path import join
-import tarfile
-import winshell
 import fileinput
+import os
 import re
+import tarfile
+from os.path import join
+
+import winshell
 
 SourceDir = join ("..")
 OutputDir = join ("..", "releases")
 
-# multiple replacement
-# from 	http://stackoverflow.com/questions/6116978/python-replace-multiple-strings
-#
-# Usage:
-# >>> replacements = (u"café", u"tea"), (u"tea", u"café"), (u"like", u"love")
-# >>> print multiple_replace(u"Do you like café? No, I prefer tea.", *replacements)
-# Do you love tea? No, I prefer café.
 def multiple_replacer(*key_values):
+    # multiple replacement
+    # from 	http://stackoverflow.com/questions/6116978/python-replace-multiple-strings
+    #
+    # Usage:
+    # >>> replacements = (u"café", u"tea"), (u"tea", u"café"), (u"like", u"love")
+    # >>> print multiple_replace(u"Do you like café? No, I prefer tea.", *replacements)
+    # Do you love tea? No, I prefer café.
     replace_dict = dict(key_values)
     replacement_function = lambda match: replace_dict[match.group(0)]
     pattern = re.compile("|".join([re.escape(k) for k, v in key_values]), re.M | re.I)
@@ -70,7 +71,7 @@ for File in os.listdir(SourceDir):
 		elif File.endswith(".md"):
 			# create temp copy
 			winshell.copy_file(join(SourceDir, File), File, rename_on_collision=False)
-			for line in fileinput.input(File, inplace=1):
+			for line in fileinput.input(File, inplace=True):
 				# replace the characters escaped for dOxygen
 				print(multiple_replace(line, *mdReplacements),)
 			MyTarFile.add(File, join(WmDOTVersion, File[:-3] + ".txt"))

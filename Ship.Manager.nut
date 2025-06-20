@@ -3,8 +3,8 @@
  *	Copyright © 2012 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
- *	Permission is granted to you to use, copy, modify, merge, publish, 
- *	distribute, sublincense, and/or sell this software, and provide these 
+ *	Permission is granted to you to use, copy, modify, merge, publish,
+ *	distribute, sublincense, and/or sell this software, and provide these
  *	rights to others, provided:
  *
  *	+ The above copyright notice and this permission notice shall be included
@@ -13,32 +13,31 @@
  *		contributions.
  *	+ You accept that this software is provided to you "as is", without warranty.
  */
- 
+
 /*	Ship Manager takes existing ship routes and add and deletes ships as needed.
  */
- 
+
 class ManShips {
 	function GetVersion()       { return 2; }
 	function GetRevision()		{ return 121125; }
 	function GetDate()          { return "2012-11-25"; }
 	function GetName()          { return "Ship Manager"; }
-	
-	
+
+
 	_NextRun = null;
 	_SleepLength = null;	//	as measured in days
 	_AllRoutes = null;
 	_ShipsToSell = null;
-	
+
 	Log = null;
 	Money = null;
-	
-	constructor()
-	{
+
+	constructor() {
 		this._NextRun = 0;
 		this._SleepLength = 30;
 		this._AllRoutes = [];
 		this._ShipsToSell = [];
-		
+
 		this.Settings = this.Settings(this);
 		this.State = this.State(this);
 		Log = OpLog();
@@ -57,11 +56,9 @@ class Route {
 }
 
 class ManShips.Settings {
-
 	_main = null;
-	
-	function _set(idx, val)
-	{
+
+	function _set(idx, val) {
 		switch (idx) {
 			case "SleepLength":			this._main._SleepLength = val; break;
 
@@ -69,26 +66,23 @@ class ManShips.Settings {
 		}
 		return val;
 	}
-		
-	function _get(idx)
-	{
+
+	function _get(idx) {
 		switch (idx) {
 			case "SleepLength":			return this._main._SleepLength; break;
 
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
-	
-	constructor(main)
-	{
+
+	constructor(main) {
 		this._main = main;
 	}
 }
- 
-class ManShips.State {
 
+class ManShips.State {
 	_main = null;
-	
+
 	function _get(idx)
 	{
 		switch (idx) {
@@ -99,28 +93,26 @@ class ManShips.State {
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
-	
-	constructor(main)
-	{
+
+	constructor(main) {
 		this._main = main;
 	}
 }
 
-function ManShips::LinkUp() 
-{
+function ManShips::LinkUp()  {
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
 
 	Log.Note(this.GetName() + " linked up!",3);
 }
 
- 
+
 function ManShips::Run() {
-	Log.Note("Ship Manager running at tick " + AIController.GetTick() + ".",1);
-	
+	Log.Note("Ship Manager running at tick " + AIController.GetTick() + ".", 1);
+
 	//	reset counter
 	this._NextRun = AIController.GetTick() + this._SleepLength * 17;
-	
+
 	for (local i=0; i < this._AllRoutes.len(); i++) {
 		//	Add Ships
 		Log.Note("Considering Route #" + i + "... " + AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) + " > " + this._AllRoutes[i]._Capacity + " ? " +(AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) > this._AllRoutes[i]._Capacity),3);
@@ -157,7 +149,7 @@ function ManShips::Run() {
 				do {
 					SellVehicle = Waiting.Next();
 					AIVehicle.SendVehicleToDepot(SellVehicle);
-					this._ShipsToSell.push(SellVehicle);					
+					this._ShipsToSell.push(SellVehicle);
 					Log.Note("Vehicle #" + SellVehicle + " sent to depot to be sold.", 4);
 				} while (!Waiting.IsEnd())
 			}
@@ -165,8 +157,7 @@ function ManShips::Run() {
 	}
 }
 
-function ManShips::AddRoute (ShipID, CargoNo)
-{
+function ManShips::AddRoute (ShipID, CargoNo) {
 	local TempRoute = Route();
 	TempRoute._EngineID = ShipID;
 	TempRoute._Capacity = AIVehicle.GetCapacity(ShipID, CargoNo);
@@ -178,7 +169,7 @@ function ManShips::AddRoute (ShipID, CargoNo)
 			i = 1000;	//break
 		}
 	}
-	
+
 	// Name Ship - format: Town_Name Cargo R[Route Number]-[incremented number]
 	local temp_name = "";
 	temp_name += AITown.GetName(AIStation.GetNearestTown(TempRoute._SourceStation));
@@ -186,16 +177,16 @@ function ManShips::AddRoute (ShipID, CargoNo)
 	temp_name = temp_name + " " + AICargo.GetCargoLabel(CargoNo) + " R";
 	temp_name += (this._AllRoutes.len() + 1) + "-1";
 	AIVehicle.SetName(ShipID, temp_name);
-	
+
 	// Create a Group for the route
 	local group_number = AIGroup.CreateGroup(AIVehicle.VT_WATER);
 	AIGroup.SetName(group_number, "Route " + (this._AllRoutes.len() + 1));
 	AIGroup.MoveVehicle(group_number, ShipID);
 	TempRoute._GroupID = group_number;
-	
+
 //	TempRoute._Depot = Marine.NearestDepot(TempRoute._SourceStation);
 	TempRoute._LastUpdate = WmDOT.GetTick();
-	
+
 	this._AllRoutes.push(TempRoute);
 	Log.Note("Route added! Ship " + TempRoute._EngineID + "; " + TempRoute._Capacity + " tons of " + AICargo.GetCargoLabel(TempRoute._Cargo) + "; starting at " + TempRoute._SourceStation + "; build at " + TempRoute._Depot + "; updated at tick " + TempRoute._LastUpdate + ".", 4);
 }

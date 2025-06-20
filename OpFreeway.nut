@@ -1,10 +1,10 @@
-/*	Operation Freeway v.1.2, [2013-01-01],  
+/*	Operation Freeway v.1.2, [2013-01-01],
  *		part of WmDOT v.12.1
  *	Copyright © 2012-13 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
- *	Permission is granted to you to use, copy, modify, merge, publish, 
- *	distribute, sublincense, and/or sell this software, and provide these 
+ *	Permission is granted to you to use, copy, modify, merge, publish,
+ *	distribute, sublincense, and/or sell this software, and provide these
  *	rights to others, provided:
  *
  *	+ The above copyright notice and this permission notice shall be included
@@ -13,7 +13,7 @@
  *		contributions.
  *	+ You accept that this software is provided to you "as is", without warranty.
  */
- 
+
 /*	Operation Freeways
  *		Operation Freeways builds off of OpDOT and the Dominion Land System
  *		(grid roads in MetaLibrary) to build 'rural' freeways. It does this by
@@ -35,57 +35,50 @@ class OpFreeway {
 	Money = null;
 	Pathfinder = null;
 
-	constructor()
-	{
+	constructor() {
 		this._NextRun = 13001;
 		this._RoadType = AIRoad.ROADTYPE_ROAD;
-		
+
 //		this.Settings = this.Settings(this);
 		this.State = this.State(this);
 		Log = OpLog();
 		Money = OpMoney();
 		Pathfinder = RoadPathfinder();
 	}
-
 }
 
 class OpFreeway.State {
-
 	_main = null;
-	
-	function _get(idx)
-	{
+
+	function _get(idx) {
 		switch (idx) {
 			case "NextRun":			return this._main._NextRun; break;
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
-	
-	function _set(idx, val)
-	{
+
+	function _set(idx, val) {
 		switch (idx) {
 			case "NextRun":				this._main._NextRun = val; break;
 			default: throw("The index '" + idx + "' does not exist");
 		}
 		return val;
 	}
-	
-	constructor(main)
-	{
+
+	constructor(main) {
 		this._main = main;
 	}
 }
 
-function OpFreeway::LinkUp() 
-{
+function OpFreeway::LinkUp() {
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
 	this.Pathfinder = WmDOT.DLS;
 	Log.Note(this.GetName() + " linked up!", 3);
 }
- 
+
 function OpFreeway::AcceptPath(PathToTiles) {
-	//	TO-DO: add safety check to input here
+	//	TODO: add safety check to input here
 	this._tiles = PathToTiles;
 	return;
 }
@@ -165,7 +158,7 @@ function OpFreeway::Run() {
 					//	this won't work if we need a bridge or a tunnel
 					AIRoad.SetCurrentRoadType(this._RoadType);
 					local BuildingMode = AITestMode();
-					local BeanCounter = AIAccounting();				//	To figure out costs	
+					local BeanCounter = AIAccounting();				//	To figure out costs
 					if (AIRoad.BuildRoad(End1, End2)) {
 						Log.Note("Parallel road buildable!", 6);
 						//	Build some roads for costs only
@@ -198,7 +191,7 @@ function OpFreeway::Run() {
 						Log.Note("Connections : " + String1 + " : " + String2 + " : " + String3, 6);
 						if ((AIRoad.AreRoadTilesConnected(SquareEnd11, SquareEnd12) || AIRoad.AreRoadTilesConnected(SquareEnd13, SquareEnd14)) && (AIRoad.AreRoadTilesConnected(SquareEnd11, SquareEnd14) || AIRoad.AreRoadTilesConnected(SquareEnd12, SquareEnd13)) && (AIRoad.AreRoadTilesConnected(SquareEnd21, SquareEnd22) || AIRoad.AreRoadTilesConnected(SquareEnd23, SquareEnd24)) && (AIRoad.AreRoadTilesConnected(SquareEnd21, SquareEnd24) || AIRoad.AreRoadTilesConnected(SquareEnd22, SquareEnd23))) {
 							//	Build one way arrows
-							//	To-Do: check for exiting one-way road so we don't make the road no-entry or remove the one-way-ness
+							//	TODO: check for exiting one-way road so we don't make the road no-entry or remove the one-way-ness
 							local OneWay11;
 							local OneWay12;
 							local OneWay21;
@@ -232,7 +225,7 @@ function OpFreeway::Run() {
 								break;
 								//	should never get here
 							}
-							
+
 							local from = OneWay12;
 							local to;
 							local Shifting = Direction.GetDirectionToTile(from, OneWay11);

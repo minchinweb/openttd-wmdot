@@ -1,6 +1,6 @@
 ﻿WmDOT Changelog
 v.14, 2016-08-29
-Copyright © 2011-16 by W. Minchin. For more info, please visit
+Copyright © 2011-16, 2025 by Wm. Minchin. For more info, please visit
     https://github.com/MinchinWeb/openttd-wmdot  or
     http://www.tt-forums.net/viewtopic.php?f=65&t=53698
 
@@ -20,7 +20,7 @@ Version 14 [2016-08-29]
     Fix a bug in Operation Hibernia where there are oil wells near the
         destination oil refinery.
     Updated to MetaLibrary v9
-    pdated to SuperLib v39
+    Updated to SuperLib v39
 Version 13 [2014-03-10]
     Updated to MetaLibrary v8
 Version 12 [2012-12-31]

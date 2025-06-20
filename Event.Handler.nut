@@ -3,8 +3,8 @@
  *	Copyright © 2012 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
- *	Permission is granted to you to use, copy, modify, merge, publish, 
- *	distribute, sublincense, and/or sell this software, and provide these 
+ *	Permission is granted to you to use, copy, modify, merge, publish,
+ *	distribute, sublincense, and/or sell this software, and provide these
  *	rights to others, provided:
  *
  *	+ The above copyright notice and this permission notice shall be included
@@ -13,29 +13,28 @@
  *		contributions.
  *	+ You accept that this software is provided to you "as is", without warranty.
  */
- 
+
 /*	Event Handler deals with events as OpenTTD feed them to the AI.
  */
- 
+
 class Events {
 	function GetVersion()       { return 1; }
 	function GetRevision()		{ return 252; }
 	function GetDate()          { return "2012-06-30"; }
 	function GetName()          { return "Event Handler"; }
-	
-	
+
+
 	_NextRun = null;
 	_SleepLength = null;	//	as measured in days
-	
+
 	Log = null;
 	Money = null;
 	Manager_Ships = null;
-	
-	constructor()
-	{
+
+	constructor() {
 		this._NextRun = 0;
 		this._SleepLength = 3;
-		
+
 		this.Settings = this.Settings(this);
 		this.State = this.State(this);
 		Log = OpLog();
@@ -45,11 +44,9 @@ class Events {
 }
 
 class Events.Settings {
-
 	_main = null;
-	
-	function _set(idx, val)
-	{
+
+	function _set(idx, val) {
 		switch (idx) {
 			case "SleepLength":			this._main._SleepLength = val; break;
 
@@ -57,41 +54,36 @@ class Events.Settings {
 		}
 		return val;
 	}
-		
-	function _get(idx)
-	{
+
+	function _get(idx) {
 		switch (idx) {
 			case "SleepLength":			return this._main._SleepLength; break;
 
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
-	
-	constructor(main)
-	{
+
+	constructor(main) {
 		this._main = main;
 	}
 }
- 
-class Events.State {
 
+class Events.State {
 	_main = null;
-	
-	function _get(idx)
-	{
+
+	function _get(idx) {
 		switch (idx) {
 			case "NextRun":			return this._main._NextRun; break;
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
-	
-	constructor(main)
-	{
+
+	constructor(main) {
 		this._main = main;
 	}
 }
 
-function Events::LinkUp() 
+function Events::LinkUp()
 {
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
@@ -100,18 +92,18 @@ function Events::LinkUp()
 	Log.Note(this.GetName() + " linked up!",3);
 }
 
- 
+
 function Events::Run() {
 	Log.Note("Event Handler running at tick " + AIController.GetTick() + ".", 1);
-	
+
 	//	Reset next run
 	this._NextRun = AIController.GetTick() + this._SleepLength * 17;
-	
+
 	// Handle Events
 	while(AIEventController.IsEventWaiting()) {
 		local Event = AIEventController.GetNextEvent();
 		Log.Note("Event: " + Event.GetEventType(), 3);
-		
+
 		switch(Event.GetEventType()) {
 			case AIEvent.ET_SUBSIDY_OFFER:
 				Log.Note("Nice event and all, but I have no idea what to do about it...", 4);
@@ -176,18 +168,18 @@ function Events::Run() {
 			case AIEvent.ET_GOAL_QUESTION_ANSWER:
 				Log.Note("Nice event and all, but I have no idea what to do about it...", 4);
 				break;
-				
+
 			case AIEvent.ET_COMPANY_ASK_MERGER:
 				// Accept the merger is the company is a 'DOT' or the value is $2
 				local Event2 = AIEventCompanyAskMerger.Convert(Event);
 				local Company = Event2.GetCompanyID();
 				local Value = Event2.GetValue();
 				local Name = AICompany.GetName(Company);
-				
+
 				// if Name == null, then the company has ceased to exist, and
 				// so we can't accept the merger.
 				if (Name != null) {
-					Name.find("DOT")== null
+					Name.find("DOT") == null
 					if ((Name.find("DOT") != null) || (Value < 2)) {
 						Money.FundsRequest(Value);
 						local Accepted = Event2.AcceptMerger();
@@ -199,7 +191,7 @@ function Events::Run() {
 					Log.Note("Merger offered, but we're too late.", 4);
 				}
 				break;
-				
+
 			case AIEvent.ET_VEHICLE_CRASHED:
 				//	Clone the crashed vehicle
 				local Event2 = AIEventVehicleCrashed.Convert(Event);
@@ -214,25 +206,26 @@ function Events::Run() {
 					local OldVehicle = Event2.GetVehicleID();
 					Money.FundsRequest(AIEngine.GetPrice(AIVehicle.GetEngineType(OldVehicle)) * 1.1);
 					//	Get the depot closest to the first order of the vehicle
-					local AllDepots = AIDepotList(AIVehicle.GetVehicleType(OldVehicle));	// TO-DO: check this
+					// TODO: check this
+					local AllDepots = AIDepotList(AIVehicle.GetVehicleType(OldVehicle));
 					AllDepot.Valuate(GetDistanceManhattanToTile, AIOrder.GetOrderDestination(OldVehicle, 0));
 					local Depot = AllDepots.Begin();
 					local NewVehicle;
 					NewVehicle = AIVehicle.CloneVehicle(Depot, OldVehicle, true);
 					AIVehicle.StartStopVehicle(NewVehicle);
-					Log.Note("Crahsed Vehicle Replaced: " + NewVehicle, 4);
+					Log.Note("Crashed Vehicle Replaced: " + NewVehicle, 4);
 				}
 				break;
-					
+
 			case AIEvent.ET_VEHICLE_WAITING_IN_DEPOT:
 				//	Sell the sucker!!
-				//  TO-DO: Check to see if it is on the 'to sell' list
+				//  TODO: Check to see if it is on the 'to sell' list
 				local Event2 = AIEventVehicleWaitingInDepot.Convert(Event);
 				local Vehicle = Event2.GetVehicleID();
 				local Result = AIVehicle.SellVehicle(Vehicle);
 				Log.Note("Vehicle " + Vehicle + " sold! : " + Result, 4);
 				break;
-				
+
 			case AIEvent.ET_ENGINE_PREVIEW:
 				//	Always accept
 				local Event2 = AIEventEnginePreview.Convert(Event);
@@ -240,7 +233,7 @@ function Events::Run() {
 				local Result = Event2.AcceptPreview();
 				Log.Note("Preview of " + Name + " accepted! : " + Result, 4);
 				break;
-					
+
 			default:
 				Log.Warning("                Unknown event type!!");
 				break;
