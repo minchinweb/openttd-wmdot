@@ -6,7 +6,7 @@ Copyright © 2011-16 by W. Minchin. For more info, please visit
 
 == About WmDOT ===========================================================
 WmDOT (short for "William's Department of Transportation") is an AI for
-    OpenTTD, a freeware clone of Chris Saywer's Transport Tycoon Deluxe.
+    OpenTTD, a freeware clone of Chris Sawyer's Transport Tycoon Deluxe.
     Having fallen in love with the original, I was quite delighted to find
     the remake! Of the things that has been added to OpenTTD is custom
     AI's, of which this is one. For me, it's a way to back in touch with a
