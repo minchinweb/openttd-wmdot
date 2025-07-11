@@ -193,15 +193,17 @@ function TownRegistrar::Run()
 	//	for  (local i = 0; i < this._ConnectionsNN.len(); i++) {
 	//		this._ConnectionsNN[i] = [];
 	//	}
-	
-		Log.Note(this._ListOfNeighbourhoods.len() + " neighbourhoods generated. Took " + (AIController.GetTick() - tick) + " ticks.",3);
-		
-//		if (Log.Settings.DebugLevel >= 3) {
+
+		Log.Note(this._ListOfNeighbourhoods.len() + " neighbourhoods generated. Took " + (AIController.GetTick() - tick) + " ticks.", 3);
+		Log.Note("The Registry is:" ,7);
+		Log.Note(Array.ToString1D(this._LookUpList, true, true), 7);
+
+		if (Log.UpdateDebugLevel() >= 6) {
 			for (local i = 0; i < this._ListOfNeighbourhoods.len(); i++) {
 				this._ListOfNeighbourhoods[i].MarkOut();
 			}
-//		}
-		
+		}
+
 		this._NextRun += this._UpdateInterval;
 	} else {
 		Log.Warning("No towns large enough to generate neighbourhoods. Took " + (AIController.GetTick() - tick) + " ticks.");
@@ -212,12 +214,21 @@ function TownRegistrar::Run()
 }
 
 //	this._TownArray = Towns.GenerateTownList(this._Mode);
-function TownRegistrar::GenerateTownList(HQTown)
-{
-//	Generates the town list for OpDOT
-//	The town list corresponds to the neighbourhood where the HQ is located
+function TownRegistrar::GenerateTownList(HQTown) {
+	//	Generates the town list for OpDOT
+	//	The town list corresponds to the neighbourhood where the HQ is located
 
-	return this._ListOfNeighbourhoods[this._LookUpList[HQTown]].GetTowns();
+	local neighbourhood_number = this._LookUpList[HQTown];
+	if (neighbourhood_number == null) {
+		Log.Warning("HQTown is not in the Town Registry (population too small?).")
+		//	return empty list
+		return [];
+	}
+
+	local neighbourhood_towns = this._ListOfNeighbourhoods[neighbourhood_number];
+	local my_towns = neighbourhood_towns.GetTowns();
+
+	return my_towns;
 }
 
 function TownRegistrar::GenerateCapitalToHQArray(HQTown)

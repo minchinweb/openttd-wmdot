@@ -16,6 +16,7 @@ WmDOT (short for "William's Department of Transportation") is an AI for
 For full details on WmDOT, see the attached README.txt
 
 == Full Version History ==================================================
+    Fix a crash if the HQ Town had too small a population.
 Version 14 [2016-08-29]
     Fix a bug in Operation Hibernia where there are oil wells near the
         destination oil refinery.

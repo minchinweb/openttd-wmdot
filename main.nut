@@ -464,7 +464,11 @@ function WmDOT::BuildWmHQ()
 	}
 	
 	tick = this.GetTick() - tick;
-	Log.Note("HQ built at "+ AIMap.GetTileX(Walker.GetTile()) + ", " + AIMap.GetTileY(Walker.GetTile()) + ". Took " + Walker.GetStep() + " tries. Took " + tick + " tick(s).",2);
+	Log.Note(
+		"HQ built at "+ AIMap.GetTileX(Walker.GetTile()) + ", " +
+		AIMap.GetTileY(Walker.GetTile()) + " in Town No " + HQTown + ". Took " +
+		Walker.GetStep() + " tries. Took " + tick + " tick(s).", 2
+	);
 	return HQTown;
 }
 
