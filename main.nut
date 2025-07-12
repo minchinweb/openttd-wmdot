@@ -87,6 +87,8 @@ function WmDOT::Start()
 	
 	Log.Note("Loading Libraries...", 0);		// Actually, by this point it's already happened
 	Log.Note("     " + MetaLib.GetName() + ", v." + MetaLib.GetVersion() + " r." + MetaLib.GetRevision() + "  loaded!", 0);
+	// Log.Note("     " + SuperLib.GetAuthor() + "'s " + SuperLib.GetName() + ", v." + Helper.GetSuperLibVersion() + " r." + SuperLib.GetDate() + " loaded!", 0);
+	Log.Note("     " + "Zuu's SuperLib" + ", v." + Helper.GetSuperLibVersion() + "  loaded!", 0);
 	Log.Note("     " + Log.GetName() + ", v." + Log.GetVersion() + " r." + Log.GetRevision() + "  loaded!", 0);
 	Log.Note("     " + Money.GetName() + ", v." + Money.GetVersion() + " r." + Money.GetRevision() + "  loaded!", 0);
 	Log.Note("     " + DOT.GetName() + ", v." + DOT.GetVersion() + " r." + DOT.GetRevision() + "  loaded!", 0);
