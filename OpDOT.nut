@@ -467,14 +467,12 @@ function OpDOT::GenerateAtlas(WmTownArray)
 		local TempArray = [];		// Generate the Array one 'line' at a time
 		TempArray.resize(WmTownArray.len()+1);
 		TempArray[0]=iTown;
-		local jTown = AITown();
 		for (local j = 0; j < WmTownArray.len(); j++) {
 			if (i >= j) {
 				TempArray[j+1] = 0;		// Make it so it only generates half the array.
 			}
 			else {
-				jTown = WmTownArray[j];
-				TempArray[j+1] = AIMap.DistanceManhattan(AITown.GetLocation(iTown),AITown.GetLocation(jTown));
+				TempArray[j+1] = AIMap.DistanceManhattan(AITown.GetLocation(iTown),AITown.GetLocation(WmTownArray[j]));
 			}
 		}
 		WmAtlas[i]=TempArray;
