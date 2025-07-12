@@ -1,6 +1,6 @@
 ﻿WmDOT Changelog
-v.14, 2016-08-29
-Copyright © 2011-16 by W. Minchin. For more info, please visit
+v.15, 2025-07-12
+Copyright © 2011-16, 2025 by W. Minchin. For more info, please visit
     https://github.com/MinchinWeb/openttd-wmdot  or
     http://www.tt-forums.net/viewtopic.php?f=65&t=53698
 
@@ -16,6 +16,8 @@ WmDOT (short for "William's Department of Transportation") is an AI for
 For full details on WmDOT, see the attached README.txt
 
 == Full Version History ==================================================
+Version 15 [Unreleased]
+    Fix the Freeway builder so it is consistently right-handed.
     Fix a crash if the HQ Town had too small a population.
 Version 14 [2016-08-29]
     Fix a bug in Operation Hibernia where there are oil wells near the

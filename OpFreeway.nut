@@ -1,6 +1,6 @@
-/*	Operation Freeway v.1.2, [2013-01-01],  
- *		part of WmDOT v.12.1
- *	Copyright © 2012-13 by W. Minchin. For more info,
+/*	Operation Freeway v.2, [2025-07-12],
+ *		part of WmDOT v.15
+ *	Copyright © 2012-13, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
  *	Permission is granted to you to use, copy, modify, merge, publish, 
@@ -14,17 +14,17 @@
  *	+ You accept that this software is provided to you "as is", without warranty.
  */
  
-/*	Operation Freeways
- *		Operation Freeways builds off of OpDOT and the Dominion Land System
+/*	Operation Freeway
+ *		Operation Freeway builds off of OpDOT and the Dominion Land System
  *		(grid roads in MetaLibrary) to build 'rural' freeways. It does this by
  *		turning straight stretches of roads between grid points into two
  *		one-way roads running side by side.
  */
 
 class OpFreeway {
-	function GetVersion()       { return 1; }
-	function GetRevision()		{ return 130101; }
-	function GetDate()          { return "2013-01-01"; }
+	function GetVersion()       { return 2; }
+	function GetRevision()		{ return 250712; }
+	function GetDate()          { return "2025-07-12"; }
 	function GetName()          { return "Operation Freeway"; }
 
 	_NextRun = null;
@@ -125,7 +125,7 @@ function OpFreeway::Run() {
 		local StartTile = this._tiles[i];
 		local NextTile;
 		local EndTile = null;
-		Log.Note("i: " + i + " Tile:" + Array.ToStringTiles1D([StartTile], false) + " Grid Point: " + Pathfinder.IsGridPoint(StartTile),5);
+		Log.Note("i: " + i + " / Tile:" + Array.ToStringTiles1D([StartTile], false) + " / Grid Point: " + Pathfinder.IsGridPoint(StartTile), 5);
 		if (Pathfinder.IsGridPoint(StartTile)) {
 			//	is tile a grid point? if not, skip
 			local BeforeTile = StartTile;
@@ -149,6 +149,7 @@ function OpFreeway::Run() {
 					} else {
 						Log.Warning ("OpFreeway.Run without direction shift!!");
 					}
+					Log.Note("Direction: " + Direction.GetDirString(myDirection) + " / Shift: " + Direction.GetDirString(Shift), 7)
 					// Get shifted endpoints
 					local End1 = Direction.GetAdjacentTileInDirection(StartTile, Shift);
 					local End2 = Direction.GetAdjacentTileInDirection(NextTile, Shift);
@@ -163,6 +164,7 @@ function OpFreeway::Run() {
 
 					//	test to see if we can build from End1 to End2
 					//	this won't work if we need a bridge or a tunnel
+					// TODO: Make this square "flat" to allow better side connections
 					AIRoad.SetCurrentRoadType(this._RoadType);
 					local BuildingMode = AITestMode();
 					local BeanCounter = AIAccounting();				//	To figure out costs	
@@ -232,7 +234,22 @@ function OpFreeway::Run() {
 								break;
 								//	should never get here
 							}
-							
+
+							// make the one-way roads right handed
+							if ((myDirection == Direction.DIR_NE) || (myDirection == Direction.DIR_SW)) {
+								Log.Note("Swap of one-way pairs for right-handed roads. Direction: " + Direction.GetDirString(myDirection), 7);
+
+								local TempWay = OneWay11;
+								OneWay11 = OneWay12;
+								OneWay12 = TempWay;
+
+								TempWay = OneWay21;
+								OneWay21 = OneWay22;
+								OneWay22 = TempWay;
+							} else {
+								Log.Note("No swap of one-way pairs needed for right-handed roads. Direction: " + Direction.GetDirString(myDirection), 7);
+							}
+
 							local from = OneWay12;
 							local to;
 							local Shifting = Direction.GetDirectionToTile(from, OneWay11);
