@@ -1,6 +1,6 @@
-﻿/*	Town Registrar v.1, r.221, [2012-01-28]
- *		part of WmDOT v.9
- *	Copyright © 2011-12 by W. Minchin. For more info,
+﻿/*	Town Registrar v.2, r.250711, [2025-07-11]
+ *		part of WmDOT v.15
+ *	Copyright © 2011-12, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
  *	Permission is granted to you to use, copy, modify, merge, publish,
@@ -15,17 +15,17 @@
  */
 
 /*	The Town Registrar
- *			Registrar - n. someone responsible for keeping records
+ *			Registrar - noun. someone responsible for keeping records
  *		The Town Registrar keeps track of all things town related and is
  *		responsible to dividing the map into neighbourhoods, providing the town
  *		list to OpDOT, and recording connections make.
  *		No expenditures. No revenue stream.
  */
- class TownRegistrar {
-	function GetVersion()       { return 1; }
-	function GetRevision()		{ return 221; }
-	function GetDate()          { return "2011-01-28"; }
 
+class TownRegistrar {
+	function GetVersion()       { return 2; }
+	function GetRevision()		{ return 250711; }
+	function GetDate()          { return "2025-07-11"; }
 	function GetName()          { return "Town Registrar"; }
 
 	_MaxAtlasSize = null;
@@ -275,4 +275,5 @@ function TownRegistrar::UpdateMode(NewMode = 1) {
 	}
 	this._NextRun = AIController.GetTick();
 }
+
 // EOF

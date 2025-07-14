@@ -1,6 +1,6 @@
 ﻿WmDOT Read-me
-v.14, 2016-08-29
-Copyright © 2011-16 by W. Minchin. For more info, please visit
+v.15, 2025-07-14
+Copyright © 2011-16, 2025 by W. Minchin. For more info, please visit
     https://github.com/MinchinWeb/openttd-wmdot  or
     http://www.tt-forums.net/viewtopic.php?f=65&t=53698
 
@@ -90,9 +90,14 @@ Operation Hibernia: On/Off
         little bit of money.
 
 == Version History =======================================================
-Version 14 [2016-08-29]
-    Fix a bug in Operation Hibernia where there are oil wells near the
-        destination oil refinery.
+Version 15 [2025-07-14]
+    (Attempt to) fix crash where the Ship Pathfinder returned `null` for buoy
+        count (see Issue #15 and #17).
+    Fix logging crash in OpHibernia if one of the depots was unbuilt
+        (see Issue #18).
+    Fix the Freeway builder so it is consistently right-handed (see Issue #10).
+    Fix a crash if the HQ Town had too small a population.
+    Updated to MetaLibrary v10 and SuperLib v40
 
 See the attached CHANGELOG.txt for full version history.
 

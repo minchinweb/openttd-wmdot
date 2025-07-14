@@ -1,5 +1,5 @@
 ﻿WmDOT Changelog
-v.15, 2025-07-12
+v.15, 2025-07-14
 Copyright © 2011-16, 2025 by W. Minchin. For more info, please visit
     https://github.com/MinchinWeb/openttd-wmdot  or
     http://www.tt-forums.net/viewtopic.php?f=65&t=53698
@@ -16,17 +16,20 @@ WmDOT (short for "William's Department of Transportation") is an AI for
 For full details on WmDOT, see the attached README.txt
 
 == Full Version History ==================================================
-Version 15 [Unreleased]
+Version 15 [2025-07-14]
+    (Attempt to) fix crash where the Ship Pathfinder returned `null` for buoy
+        count (see Issue #15 and #17).
     Fix logging crash in OpHibernia if one of the depots was unbuilt
-        (see Issue #18)
-    Fix the Freeway builder so it is consistently right-handed. (see Issue #10)
+        (see Issue #18).
+    Fix the Freeway builder so it is consistently right-handed (see Issue #10).
     Fix a crash if the HQ Town had too small a population.
+    Updated to MetaLibrary v10 and SuperLib v40
 Version 14 [2016-08-29]
     Fix a bug in Operation Hibernia where there are oil wells near the
         destination oil refinery.
-    Updated to MetaLibrary v9
-    pdated to SuperLib v39
+    Updated to MetaLibrary v9 and SuperLib v39
 Version 13 [2014-03-10]
+    Better ship naming (see Issue #1)
     Updated to MetaLibrary v8
 Version 12 [2012-12-31]
     Fix typo

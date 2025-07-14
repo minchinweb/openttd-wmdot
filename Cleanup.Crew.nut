@@ -59,34 +59,30 @@ class OpCleanupCrew.State {
 
 	_main = null;
 
-	function _get(idx)
-	{
+	function _get(idx) {
 		switch (idx) {
-//			case "Mode":			return this._main._Mode; break;
+			// case "Mode":			return this._main._Mode; break;
 			case "NextRun":			return this._main._next_run; break;
-//			case "ROI":				return this._main._ROI; break;
-//			case "Cost":			return this._main._Cost; break;
+			// case "ROI":				return this._main._ROI; break;
+			// case "Cost":			return this._main._Cost; break;
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
 
-	constructor(main)
-	{
+	constructor(main) {
 		this._main = main;
 	}
 }
 
-function OpCleanupCrew::LinkUp()
-{
+function OpCleanupCrew::LinkUp() {
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
 	Log.Note(this.GetName() + " linked up!",3);
 }
 
-function OpCleanupCrew::Reset()
-{
-//	Clears the internal heap and the Golden Path
-//	Can be invoked externally, but is invoked internally at the end of Run()
+function OpCleanupCrew::Reset() {
+	//	Clears the internal heap and the Golden Path
+	//	Can be invoked externally, but is invoked internally at the end of Run()
 	this._built_tiles = null;
 	this._golden_path = null;
 	this._heap = null;
@@ -95,48 +91,44 @@ function OpCleanupCrew::Reset()
 }
 
 
-function OpCleanupCrew::AcceptBuiltTiles(TilePairArray)
-{
-//	Takes in a Array of Tile Pairs and adds them to an internal heap to be
-//		dealt with later
-//	TO-DO: Add an error check on the supplied array
+function OpCleanupCrew::AcceptBuiltTiles(TilePairArray) {
+	//	Takes in a Array of Tile Pairs and adds them to an internal heap to be
+	//		dealt with later
+	//	TODO: Add an error check on the supplied array
 
-//	Note: Tiles are added with a random priority. This is so that they get
-//		pulled off the map in a 'random' order, which I thought would look cool :)
+	//	Note: Tiles are added with a random priority. This is so that they get
+	//		pulled off the map in a 'random' order, which I thought would look cool :)
 
 	Log.Note("Running CleanupCrew.AcceptBuildTiles...", 3);
 	for (local i = 0; i < TilePairArray.len(); i++ ) {
-//		Log.Note("Inserting " + Array.ToStingTiles1D(TilePairArray[i]) + " : " + i + ".", 4);
+		// Log.Note("Inserting " + Array.ToStingTiles1D(TilePairArray[i]) + " : " + i + ".", 4);
 		this._heap.Insert(TilePairArray[i], AIBase.RandRange(255) );
 	}
 }
 
-function OpCleanupCrew::AcceptGoldenPath(TilePairArray)
-{
-//	Takes in an Array of Tile Pairs that represents the 'Golden Path' or
-//		perfect routing. Tile Pairs appearing on this list will not be un-built
-//	TO-DO: Add an error check on the supplied array
+function OpCleanupCrew::AcceptGoldenPath(TilePairArray) {
+	//	Takes in an Array of Tile Pairs that represents the 'Golden Path' or
+	//		perfect routing. Tile Pairs appearing on this list will not be un-built
+	//	TODO: Add an error check on the supplied array
 
 	this._golden_path = TilePairArray;
 	return this._golden_path;
 }
 
-function OpCleanupCrew::SetToRun()
-{
-//	Involved OpDOT to have Cleanup Crew run on the next pass in the main loop
+function OpCleanupCrew::SetToRun() {
+	//	Involved OpDOT to have Cleanup Crew run on the next pass in the main loop
 
-//	Note:	This is set to run at the current moment (tick). However, the main
-//			loop compares run times to the time when the loop started.
-//			Therefore, put CleanupCrew above OpDOT in the loop lists to be sure
-//			that CleanupCrew runs before OpDOT does again.
+	//	Note:	This is set to run at the current moment (tick). However, the
+	//			main loop compares run times to the time when the loop started.
+	//			Therefore, put CleanupCrew above OpDOT in the loop lists to be
+	//			sure that CleanupCrew runs before OpDOT does again.
 
 	this._next_run = AIController.GetTick() - 1;
 	return this._next_run;
 }
 
-function OpCleanupCrew::Run()
-{
-//	This is where the real action is!
+function OpCleanupCrew::Run() {
+	//	This is where the real action is!
 	local tick = AIController.GetTick();
 	if (this._golden_path == null) {
 		Log.Note("Cleanup Crew: At tick " + tick + ".",1);
@@ -147,7 +139,7 @@ function OpCleanupCrew::Run()
 
 	Log.Note("Cleanup Crew is employed at tick " + tick + ".",1);
 	//	Funds Request
-//	Money.FundsRequest()
+	// Money.FundsRequest()
 
 	AIRoad.SetCurrentRoadType(this._road_type);
 	local TestPair;
@@ -184,11 +176,12 @@ function OpCleanupCrew::Run()
 	Log.Note("Cleanup Crew's work is complete, took " + (AIController.GetTick() - tick) + " ticks, " + i + " tiles removed.", 2);
 }
 
-function OpCleanupCrew::SetRoadType(ARoadType)
-{
-//	Changes the road type Cleanup Crew is operating in
-//	TO-DO: Add an error check on the supplied value
+function OpCleanupCrew::SetRoadType(ARoadType) {
+	//	Changes the road type Cleanup Crew is operating in
+	//	TODO: Add an error check on the supplied value
 
 	this._road_type = ARoadType;
 	return this._road_type;
 }
+
+// EOF

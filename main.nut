@@ -1,5 +1,5 @@
-﻿/*	WmDOT v.13, [2012-12-31]
- *	Copyright © 2011-13 by W. Minchin. For more info,
+﻿/*	WmDOT v.15, [2025-07-14]
+ *	Copyright © 2011-13, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
  *	Permission is granted to you to use, copy, modify, merge, publish,
@@ -13,14 +13,14 @@
  *	+ You accept that this software is provided to you "as is", without warranty.
  */
 
-import("util.MinchinWeb", "MetaLib", 9);
+import("util.MinchinWeb", "MetaLib", 10);
 	RoadPathfinder <- MetaLib.DLS;
 	ExistingRoadPathfinder <- MetaLib.RoadPathfinder;
 	Array <- MetaLib.Array;
 	Atlas <- MetaLib.Atlas;
 	Marine <- MetaLib.Marine;
 	OpLog <- MetaLib.Log;
-import("util.superlib", "SuperLib", 39);		//	For loan management
+import("util.superlib", "SuperLib", 40);		//	For loan management
 	SLMoney <- SuperLib.Money;
 	Helper <- SuperLib.Helper;
 	Direction <- SuperLib.Direction;
@@ -35,16 +35,14 @@ require("OpHibernia.nut");			//	Operation Hibernia
 require("Ship.Manager.nut");		//	Ship Manager
 require("Event.Handler.nut");		//	Event Handler
 require("OpFreeway.nut");			//	Freeway Builder
-		
 
- 
- class WmDOT extends AIController 
-{
+
+class WmDOT extends AIController {
 	//	SETTINGS
-	WmDOTv = 14;
+	WmDOTv = 15;
 	/*	Version number of AI
-	 */	
-	WmDOTr = 160829;
+	 */
+	WmDOTr = 250714;
 	/*	Reversion number of AI
 	 */
 
@@ -80,7 +78,7 @@ function WmDOT::Start() {
 
 //	AILog.Info("Welcome to WmDOT, version " + GetVersion() + ", revision " + WmDOTr + " by " + GetAuthor() + ".");
 	Log.Note("Welcome to WmDOT, version " + WmDOTv + ", revision " + WmDOTr + " by W. Minchin.", 0);
-	Log.Note("               Copyright © 2011-12 by W. Minchin.", 0);
+	Log.Note("               Copyright © 2011-16, 2025 by W. Minchin.", 0);
 	Log.Note("     For more info, please visit http://www.tt-forums.net/viewtopic.php?f=65&t=53698", 0)
 	Log.Note(" ", 0);
 
@@ -415,7 +413,7 @@ function WmDOT::BuildWmHQ() {
 		}
 	}
 
-	WmTownList.Valuate(AITown.GetPopulation);	
+	WmTownList.Valuate(AITown.GetPopulation);
 	local HQTown = WmTownList.Begin();
 	local OriginalHQTown = HQTown;
 
@@ -502,6 +500,14 @@ function WmDOT::TileIsWhatTown(TileIn) {
 
 	//	If it get this far, it's not in any town's influence
 	return -1;
+}
+
+function WmDOT::ColourWmDOT() {
+	// Log.Note("Setting company colours...", 1)
+
+	// Can this be set at the company level, or just for groups of vehicles??
+	// AIGroup.SetPrimaryLiveryColor(AICompany.LS_DEFAULT, AICompany.COLOUR_YELLOW);
+	// AIGroup.SetSecondaryColour(AICompany.LS_DEFAULT, AICompany.COLOUR_RED);
 }
 
 function WmDOT::TheGreatLinkUp() {
