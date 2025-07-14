@@ -1,10 +1,10 @@
-﻿/*	Cleanup Crew v.4.1, [2013-01-01] 
+﻿/*	Cleanup Crew v.4.1, [2013-01-01]
  *		part of WmDOT v.12.1
  *	Copyright © 2011-13 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
- *	Permission is granted to you to use, copy, modify, merge, publish, 
- *	distribute, sublincense, and/or sell this software, and provide these 
+ *	Permission is granted to you to use, copy, modify, merge, publish,
+ *	distribute, sublincense, and/or sell this software, and provide these
  *	rights to others, provided:
  *
  *	+ The above copyright notice and this permission notice shall be included
@@ -13,7 +13,7 @@
  *		contributions.
  *	+ You accept that this software is provided to you "as is", without warranty.
  */
- 
+
 /*	Cleanup Crew
  *		The Cleanup Crew is a sort of 'unbuilder.' Operation DOT, particularly
  *		in Mode 6, has a tendency to make a mess of the map by building roads
@@ -21,8 +21,8 @@
  *		connections that are built and being provided the 'Golden Path' (the
  *		last, and assumedly best, path built). Road tile pairs that were built
  *		but are not part of the 'Golden Path' are then 'unbuild' (deleted).
- */ 
- 
+ */
+
 //	Requires
 //		Queue.Fibonacci_Heap v.3
 
@@ -38,12 +38,12 @@ class OpCleanupCrew {
 	_heap = null;
 	_next_run = null;
 	_road_type = null;
-	
+
 	Money = null;
 	Log = null;
-	
+
 	State = null;
-	
+
 	constructor() {
 		this.Money = OpMoney();
 		this.Log = OpLog();
@@ -58,7 +58,7 @@ class OpCleanupCrew {
 class OpCleanupCrew.State {
 
 	_main = null;
-	
+
 	function _get(idx)
 	{
 		switch (idx) {
@@ -69,14 +69,14 @@ class OpCleanupCrew.State {
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
-	
+
 	constructor(main)
 	{
 		this._main = main;
 	}
 }
 
-function OpCleanupCrew::LinkUp() 
+function OpCleanupCrew::LinkUp()
 {
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
@@ -100,7 +100,7 @@ function OpCleanupCrew::AcceptBuiltTiles(TilePairArray)
 //	Takes in a Array of Tile Pairs and adds them to an internal heap to be
 //		dealt with later
 //	TO-DO: Add an error check on the supplied array
-	
+
 //	Note: Tiles are added with a random priority. This is so that they get
 //		pulled off the map in a 'random' order, which I thought would look cool :)
 
@@ -144,11 +144,11 @@ function OpCleanupCrew::Run()
 		this._next_run = tick + 10000;
 		return;
 	}
-	
+
 	Log.Note("Cleanup Crew is employed at tick " + tick + ".",1);
 	//	Funds Request
 //	Money.FundsRequest()
-	
+
 	AIRoad.SetCurrentRoadType(this._road_type);
 	local TestPair;
 	local i = 0;
@@ -180,7 +180,7 @@ function OpCleanupCrew::Run()
 	}
 
 	this.Reset();
-	
+
 	Log.Note("Cleanup Crew's work is complete, took " + (AIController.GetTick() - tick) + " ticks, " + i + " tiles removed.", 2);
 }
 

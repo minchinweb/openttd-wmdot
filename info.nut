@@ -14,9 +14,9 @@
  *	+ You accept that this software is provided to you "as is", without warranty.
  */
 
-class WmDOT extends AIInfo 
+class WmDOT extends AIInfo
 {
-	function GetAuthor()        { return "W. Minchin"; }
+	function GetAuthor()        { return "Wm. Minchin"; }
 	function GetName()          { return "WmDOT"; }
 	function GetDescription()   { return "An AI that doesn't compete with you but rather builds out the highway network. It makes a little money transporting offshore oil. v.14 (r.160829)"; }
 	function GetVersion()       { return 14; }
