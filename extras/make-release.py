@@ -29,16 +29,18 @@ import winshell
 
 SourceDir = join("..")
 OutputDir = join("..", "releases")
+if not os.path.exists(OutputDir):
+    os.makedirs(OutputDir)
 
 
-# multiple replacement
-# from 	http://stackoverflow.com/questions/6116978/python-replace-multiple-strings
-#
-# Usage:
-# >>> replacements = (u"café", u"tea"), (u"tea", u"café"), (u"like", u"love")
-# >>> print multiple_replace(u"Do you like café? No, I prefer tea.", *replacements)
-# Do you love tea? No, I prefer café.
 def multiple_replacer(*key_values):
+    """multiple replacement"""
+    # from  http://stackoverflow.com/questions/6116978/python-replace-multiple-strings
+    #
+    # Usage:
+    # >>> replacements = (u"café", u"tea"), (u"tea", u"café"), (u"like", u"love")
+    # >>> print multiple_replace(u"Do you like café? No, I prefer tea.", *replacements)
+    # Do you love tea? No, I prefer café.
     replace_dict = dict(key_values)
     replacement_function = lambda match: replace_dict[match.group(0)]
     pattern = re.compile("|".join([re.escape(k) for k, v in key_values]), re.M | re.I)
@@ -49,7 +51,7 @@ def multiple_replace(string, *key_values):
     return multiple_replacer(*key_values)(string)
 
 
-mdReplacements = ("%MinchinWeb", "MinchinWeb"), ("\_", "_"), ("←", "<-")
+mdReplacements = ("%MinchinWeb", "MinchinWeb"), ("\\_", "_"), ("←", "<-")
 
 # find version
 version = 0
