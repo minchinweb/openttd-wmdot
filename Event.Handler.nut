@@ -19,7 +19,7 @@
 
 class Events {
 	function GetVersion()       { return 1; }
-	function GetRevision()		{ return 20250714; }
+	function GetRevision()		{ return 250714; }
 	function GetDate()          { return "2025-07-14"; }
 	function GetName()          { return "Event Handler"; }
 

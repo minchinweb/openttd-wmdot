@@ -89,8 +89,7 @@ class OpDOT {
 	Pathfinder = null;
 
 
-	constructor()
-	{
+	constructor() {
 		this._SleepLength = 50;
 		this._FloatOffset = 0.001;
 		this._PathFinderCycles = 100;

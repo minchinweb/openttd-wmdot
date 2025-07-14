@@ -38,14 +38,14 @@ require("Event.Handler.nut");		//	Event Handler
 require("OpFreeway.nut");			//	Freeway Builder
 require("OpStreetcar.nut");			//	Operation Streetcar
 require("Streetcar.Manager.nut");	//	Streetcar (Route) Manager
-		
+
 
 class WmDOT extends AIController {
 	//	SETTINGS
-	WmDOTv = 15;
+	WmDOTv = 15.1;
 	/*	Version number of AI
 	 */
-	WmDOTr = 250714;
+	WmDOTr = 250715;
 	/*	Reversion number of AI
 	 */
 

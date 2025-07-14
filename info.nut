@@ -18,7 +18,7 @@ class WmDOT extends AIInfo
 {
 	function GetAuthor()        { return "Wm. Minchin"; }
 	function GetName()          { return "WmDOT"; }
-	function GetDescription()   { return "An AI that doesn't compete with you but rather builds out the highway network. It makes a little money transporting offshore oil and running public transit. v.12.1 (r.130116)"; }
+	function GetDescription()   { return "An AI that doesn't compete with you but rather builds out the highway network. It makes a little money transporting offshore oil and running public transit. v.15.1 (r.250715)"; }
 	function GetVersion()       { return 15; }
 	function MinVersionToLoad() { return 1; }
 	function GetDate()          { return "2025-07-14"; }
