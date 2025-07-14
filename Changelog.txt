@@ -17,7 +17,9 @@ For full details on WmDOT, see the attached README.txt
 
 == Full Version History ==================================================
 Version 15 [Unreleased]
-    Fix the Freeway builder so it is consistently right-handed.
+    Fix logging crash in OpHibernia if one of the depots was unbuilt
+        (see Issue #18)
+    Fix the Freeway builder so it is consistently right-handed. (see Issue #10)
     Fix a crash if the HQ Town had too small a population.
 Version 14 [2016-08-29]
     Fix a bug in Operation Hibernia where there are oil wells near the

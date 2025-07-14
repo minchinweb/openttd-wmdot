@@ -1,6 +1,6 @@
-﻿/*	Operation Hibernia v.6, [2014-02-28]
- *		part of WmDOT v.12.1
- *	Copyright © 2011-14 by W. Minchin. For more info,
+﻿/*	Operation Hibernia v.8, [2025-07-14]
+ *		part of WmDOT v.15
+ *	Copyright © 2011-14, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
  *	Permission is granted to you to use, copy, modify, merge, publish, 
@@ -22,17 +22,17 @@
  *		Operation Hibernia seeks out oil platforms, and then transports oil to
  *		Oil Refineries.
  */
- 
-//	Requires MinchinWeb's MetaLibrary v.7
+
+//	Requires MinchinWeb's MetaLibrary v.10
 //	Requires Zuu's SuperLib v.36
 
 //	TO-DO
 //		- if the cargo is passengers (or, I assume, mail), the receiving
 //			industries do not include towns but they probably should...
 
- class OpHibernia {
-	function GetVersion()       { return 7; }
-	function GetRevision()		{ return 160829; }
+class OpHibernia {
+	function GetVersion()       { return 8; }
+	function GetRevision()		{ return 250714; }
 	function GetName()          { return "Operation Hibernia"; }
 	
 	
@@ -403,8 +403,8 @@ function OpHibernia::Run() {
 								//	Build Depots						
 								local Depot1 = Marine.BuildDepot(start, MetaLib.Extras.NextCardinalTile(BuildPair[0], BuildPair[1]));
 								local Depot2 = Marine.BuildDepot(end, MetaLib.Extras.NextCardinalTile(BuildPair[1], BuildPair[0]));
-								Log.Note("Depots at" + Array.ToStringTiles1D([Depot1, Depot2]), 4);
-								
+								Log.Note("Depots at" + Array.ToStringTiles1D([Depot1, Depot2], false, true), 4);
+
 								//	TO-DO:	Do something if neither depot could be built
 								//	TO-DO:	Build Depots in the middle if the path is extra long
 								if ((Depot1 == null) && (Depot2 != null)) {
