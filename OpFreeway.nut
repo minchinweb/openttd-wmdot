@@ -205,25 +205,25 @@ function OpFreeway::Run() {
 							local OneWay12;
 							local OneWay21;
 							local OneWay22;
-							if (max(max(max(StartTile, NextTile), End1), End2) == StartTile) {
+							if (MetaLib.Extras.MultiMax(StartTile, NextTile, End1, End2) == StartTile) {
 								Log.Note("StartTile [1] is largest." + Array.ToStringTiles1D([StartTile, NextTile, End1, End2]), 6);
 								OneWay11 = StartTile;
 								OneWay12 = NextTile;
 								OneWay21 = End2;
 								OneWay22 = End1;
-							} else if (max(max(max(StartTile, NextTile), End1), End2) == NextTile) {
+							} else if (MetaLib.Extras.MultiMax(StartTile, NextTile, End1, End2) == NextTile) {
 								Log.Note("NextTile [2] is largest." + Array.ToStringTiles1D([StartTile, NextTile, End1, End2]), 6);
 								OneWay11 = NextTile;
 								OneWay12 = StartTile;
 								OneWay21 = End1;
 								OneWay22 = End2;
-							} else if (max(max(max(StartTile, NextTile), End1), End2) == End1) {
+							} else if (MetaLib.Extras.MultiMax(StartTile, NextTile, End1, End2) == End1) {
 								Log.Note("End1 [3] is largest." + Array.ToStringTiles1D([StartTile, NextTile, End1, End2]), 6);
 								OneWay11 = End1;
 								OneWay12 = End2;
 								OneWay21 = NextTile;
 								OneWay22 = StartTile;
-							} else if (max(max(max(StartTile, NextTile), End1), End2) == End2) {
+							} else if (MetaLib.Extras.MultiMax(StartTile, NextTile, End1, End2) == End2) {
 								Log.Note("End2 [4] is largest." + Array.ToStringTiles1D([StartTile, NextTile, End1, End2]), 6);
 								OneWay11 = End2;
 								OneWay12 = End1;
