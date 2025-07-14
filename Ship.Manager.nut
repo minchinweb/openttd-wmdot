@@ -1,5 +1,5 @@
-﻿/*	Ship Manager v.2, [2012-11-25]
- *		part of WmDOT v.11
+﻿/*	Ship Manager v.3, [2025-07-14]
+ *		part of WmDOT v.15
  *	Copyright © 2012 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
@@ -18,9 +18,9 @@
  */
  
 class ManShips {
-	function GetVersion()       { return 2; }
-	function GetRevision()		{ return 121125; }
-	function GetDate()          { return "2012-11-25"; }
+	function GetVersion()       { return 3; }
+	function GetRevision()		{ return 250714; }
+	function GetDate()          { return "2025-07-14"; }
 	function GetName()          { return "Ship Manager"; }
 	
 	
@@ -188,7 +188,7 @@ function ManShips::AddRoute (ShipID, CargoNo)
 	AIVehicle.SetName(ShipID, temp_name);
 	
 	// Create a Group for the route
-	local group_number = AIGroup.CreateGroup(AIVehicle.VT_WATER);
+	local group_number = AIGroup.CreateGroup(AIVehicle.VT_WATER, AIGroup.GROUP_INVALID);
 	AIGroup.SetName(group_number, "Route " + (this._AllRoutes.len() + 1));
 	AIGroup.MoveVehicle(group_number, ShipID);
 	TempRoute._GroupID = group_number;

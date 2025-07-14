@@ -24,7 +24,7 @@ class WmDOT extends AIInfo
 	function GetDate()          { return "2016-08-29"; }
 	function GetShortName()     { return "}}mW"; }	//	0x576D7D7D
 	function CreateInstance()   { return "WmDOT"; }
-	function GetAPIVersion()    { return "1.3"; }
+	function GetAPIVersion()    { return "1.9"; }
 	function UseAsRandomAI()	{ return false; }
 	function GetURL()			{ return "http://www.tt-forums.net/viewtopic.php?f=65&t=53698"; }
 //	function GetURL()			{ return "http://code.google.com/p/openttd-noai-wmdot/issues/"; }
