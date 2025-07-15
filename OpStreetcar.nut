@@ -233,9 +233,11 @@ function OpStreetcar::DiscountForStation(AllTiles, StationLocation) {
 	local BaseX = AIMap.GetTileX(StationLocation);
 	local BaseY = AIMap.GetTileY(StationLocation);
 
-	//	every tile within 2 tiles is rated zero (actually, we remove them from the list)
-	for (local ix = -2; ix <= 2; ix++) {
-		for (local iy = -2; iy <= 2; iy++) {
+	//	every tile within 3 tiles is rated zero (actually, we remove them from
+	//	the list)
+	local zero_dist = 3;
+	for (local ix = -zero_dist; ix <= zero_dist; ix++) {
+		for (local iy = -zero_dist; iy <= zero_dist; iy++) {
 			local Test = AIMap.GetTileIndex(ix + BaseX, iy + BaseY);
 			// Log.Note("    ix=" + ix + "; iy=" + iy + "; Test=" + Array.ToStringTiles1D([Test]) + " : " + AllTiles.HasItem(Test), 7);
 			if (AllTiles.HasItem(Test)) {
@@ -245,10 +247,11 @@ function OpStreetcar::DiscountForStation(AllTiles, StationLocation) {
 		}
 	}
 
-	//	for every tiles that falls within the catchment area of the 'Station Location',
-	//		the score reduced by 8 and then is cut in half
-	for (local ix = -3; ix <= 3; ix++) {
-		for (local iy = -3; iy <= 3; iy++) {
+	//	for every tiles that falls within the catchment area of the 'Station
+	//	    Location', the score reduced by 8 and then is cut in half
+	local catchment = AIStation.GetCoverageRadius(AIStation.STATION_BUS_STOP);
+	for (local ix = -catchment; ix <= catchment; ix++) {
+		for (local iy = -catchment; iy <= catchment; iy++) {
 			local Test = AIMap.GetTileIndex(ix + BaseX, iy + BaseY);
 			if (AllTiles.HasItem(Test)) {
 				AllTiles.SetValue(Test, (AllTiles.GetValue(Test) - 8)/2);
@@ -278,7 +281,7 @@ function OpStreetcar::BuildStations(AllTiles) {
 		// Log.Note("while-do loop #3", 7);
 		TryAgain = false;
 		AllTiles.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
-		AllTiles.KeepAboveValue(7);  // i.e. 8/8 is cargo acceptance
+		AllTiles.KeepAboveValue(7);  // i.e. 8/8 is required for cargo acceptance
 		// Log.Note("AllTiles " + AllTiles.Count(), 6);
 		if (AllTiles.Count() > 0) {
 			local StationLocation = AllTiles.Begin();
