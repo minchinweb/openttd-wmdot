@@ -122,15 +122,18 @@ function OpStreetcar::LinkUp()
 
 function OpStreetcar::Run() {
 	Log.Note("Streetcar Manager running at tick " + AIController.GetTick() + ".",1);
+
 	Log.Note("Rating Tiles...", 2);
 	local RatedTiles = RateTiles(this._StartTile);
 	Log.Note(RatedTiles.Count() + " tiles rated. Discounting tiles for existing stations...", 2);
 	RatedTiles = DiscountForAllStations(RatedTiles);
 	Log.Note(RatedTiles.Count() + " tiles still rated.", 3);
+
 	Log.Note("Add new stations...", 2);
-	local NewStations = BuildStations(RatedTiles);
-	Log.Note(NewStations.Count() + " stations built. Adding Routes...", 2);
-	AddRoutes(NewStations);
+	local NewStationsTile = BuildStations(RatedTiles);
+
+	Log.Note(NewStationsTile.Count() + " stations built. Adding Routes...", 2);
+	AddRoutes(NewStationsTile);
 
 	this._NextRun = AIController.GetTick() + 6500 / 4;	// run every three months
 	Log.Note("Routes added. Next run set to tick " + this._NextRun, 2);
@@ -267,36 +270,30 @@ function OpStreetcar::DiscountForStation(AllTiles, StationLocation) {
 	return AllTiles;
 }
 
+/*	\brief  Build a set of new stations
+ *  \param  AllTIles    An AIList of tiles to consider for building stations on
+ *  \returns    An AIList of the tiles where a station was built.
+ *
+ *  Builds stations on the best rated tiles. After a station is built, it cuts
+ *  the tiles in the station's catchment area in half. Keeps going until there
+ *  are no more tiles with a score better than 8/8 (full acceptance).
+ *
+ *  \todo   Only build station if it can connect to town core
+ */
 function OpStreetcar::BuildStations(AllTiles) {
-	//	Accepts a list of tiles
-	//	Builds stations on the best rated tiles
-	//	After a station is built, it cuts the tiles in the station's catchment area in half
-	//	Keeps going until there are no more tiles with a score better than 8 (full acceptance)
-
-	//	TODO:	Only build station if it can connect to town core
-
 	local TryAgain = true;
-	local NewStations = AIList();
+	local NewStationsTile = AIList();
 	while (TryAgain) {
-		// Log.Note("while-do loop #3", 7);
 		TryAgain = false;
 		AllTiles.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
 		AllTiles.KeepAboveValue(7);  // i.e. 8/8 is required for cargo acceptance
-		// Log.Note("AllTiles " + AllTiles.Count(), 6);
 		if (AllTiles.Count() > 0) {
 			local StationLocation = AllTiles.Begin();
 			// Log.Note("StationLocation" + Array.ToStringTiles1D([StationLocation]), 7);
 			if (MetaLib.Station.BuildStreetcarStation(StationLocation)) {
-				NewStations.AddItem(StationLocation, 0);
+				NewStationsTile.AddItem(StationLocation, 0);
 				AllTiles = DiscountForStation(AllTiles, StationLocation);
-
-				// get station name
-				local station_list = AIStationList(AIStation.STATION_BUS_STOP);
-				station_list.Valuate(AIStation.GetDistanceManhattanToTile, StationLocation);
-				station_list.KeepBelowValue(1);
-				local station_name = AIBaseStation.GetName(station_list.Begin())
-
-				Log.Note("Station built at" + Array.ToStringTiles1D([StationLocation]) + " : " + station_name, 3);
+				Log.Note("Station built at" + Array.ToStringTiles1D([StationLocation]) + " : " + MetaLib.Station.GetName(StationLocation), 3);
 			} else {
 				AllTiles.RemoveItem(StationLocation);
 			}
@@ -305,27 +302,48 @@ function OpStreetcar::BuildStations(AllTiles) {
 			TryAgain = false;
 		}
 	}
-	return NewStations;
+	return NewStationsTile;
 }
 
-function OpStreetcar::AddRoutes(Stations) {
-	//	Takes a list of Stations and add routes between them
+function OpStreetcar::AddRoutes(StationsTile) {
+	//	Takes a list of Stations (tiles) and add routes between them
 	//	Actually, it basically does up the pairs and then hands it off
 	//		to the route manager
-	//	Assumes Stations is an AIList
+	//	Assumes Stations is an AIList of AITiles
+	//
+	//	TODO: If given an odd number of stations, one will remain unpaired
 
-	Stations.Valuate(AITile.GetCargoAcceptance, this._PaxCargo, 1, 1, 3);
-	Stations.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
+	StationsTile.Valuate(AITile.GetCargoAcceptance, this._PaxCargo, 1, 1, 3);
+	StationsTile.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
+
+	// Log.Note(Array.ToString2D(StationsTile), 6);
+	// local TempStations = StationsTile;
+	// local TempStr = "";
+	// for (local i = 0; i < TempStations.Count(); i++ ) {
+	// 	local item = TempStations.Next();
+	// 	TempStr = TempStr + " " + item + ":" + TempStations.GetValue(item);
+	// }
+	// Log.Note(TempStr, 6);
 
 	//	split the list
-	local Delta = Stations.Count() / 2;
+	local Delta = StationsTile.Count() / 2;
 	local StationsBottom = AIList();
-	StationsBottom.AddList(Stations);
-	StationsBottom.RemoveTop(Stations.Count() - Delta);
-	Stations.RemoveBottom(Delta);
+	StationsBottom.AddList(StationsTile);
+	StationsBottom.RemoveTop(StationsTile.Count() - Delta);
+	StationsBottom.Sort(AIList.SORT_BY_VALUE, AIList.SORT_ASCENDING);
+	StationsTile.RemoveBottom(Delta);
 
-	foreach (MyStation in Stations) {
-		this.RouteManager.AddRoute(MyStation, StationsBottom.Next(), this._PaxCargo, this.Pathfinder);
+	local station_1 = StationsTile.Begin();
+	local station_2 = StationsBottom.Begin();
+	while ((station_1 != 0) && (station_2 != 0)) {
+		// a returned value of `0` means that we are beyond the end of the
+		// AIList
+		
+		Log.Note("Stations at: " + Array.ToStringTiles1D([station_1, station_2], false), 6);
+		this.RouteManager.AddRoute(station_1, station_2, this._PaxCargo, this.Pathfinder);
+
+		station_1 = StationsTile.Next();
+		station_2 = StationsBottom.Next();
 	}
 
 	return true;

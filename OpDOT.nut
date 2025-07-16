@@ -180,7 +180,7 @@ class OpDOT.State {
 
 	function _set(idx, val) {
 		switch (idx) {
-			case "NextRun":				this._main._NextRun = val; break;
+			case "NextRun":			this._main._NextRun = val; break;
 			default: throw("The index '" + idx + "' does not exist");
 		}
 		return val;
@@ -199,7 +199,7 @@ function OpDOT::LinkUp() {
 	this.Freeways = WmDOT.Freeways;
 	this.Pathfinder = WmDOT.DLS;
 
-	Log.Note(this.GetName() + " linked up!",3);
+	Log.Note(this.GetName() + " linked up!", 3);
 }
 
 function OpDOT::Run() {
