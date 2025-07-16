@@ -220,17 +220,22 @@ function OpStreetcar::DiscountForAllStations(AllTiles) {
 		AllStations = AIStationList(AIStation.STATION_TRUCK_STOP);
 	}
 
-	foreach (TestStation in AllStations) {
+	Log.Note("Found " + AllStations.Count() + " existing stations...", 7);
+	local TestStation = AllStations.Begin();
+	do {
 		AllTiles = DiscountForStation(AllTiles, AIBaseStation.GetLocation(TestStation));
-	}
+		TestStation = AllStations.Next();
+	} while(TestStation != 0)
+	//	An AIList will return `0` when out of bounds
 
 	return AllTiles;
 }
 
 function OpStreetcar::DiscountForStation(AllTiles, StationLocation) {
 	//	takes a list of tiles
-	//	for every tiles that falls within the catchment area of the 'Station Location', the score reduced by 8 and then is cut in half
-	//	and every tile within 2 tiles is rated zero
+	//	for every tiles that falls within the catchment area of the
+	//		'Station Location', the score reduced by 8 and then is cut in half
+	//		and every tile within 3 tiles is rated zero
 
 	Log.Note("DiscountForStation(): " + AllTiles.Count() + " tiles, at " + Array.ToStringTiles1D([StationLocation]), 7);
 	local BaseX = AIMap.GetTileX(StationLocation);
@@ -279,6 +284,7 @@ function OpStreetcar::DiscountForStation(AllTiles, StationLocation) {
  *  are no more tiles with a score better than 8/8 (full acceptance).
  *
  *  \todo   Only build station if it can connect to town core
+ *	\todo	Discount for existing stations
  */
 function OpStreetcar::BuildStations(AllTiles) {
 	local TryAgain = true;

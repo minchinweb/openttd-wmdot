@@ -177,28 +177,28 @@ function Events::Run() {
 
 			case AIEvent.ET_EXCLUSIVE_TRANSPORT_RIGHTS:
 				Log.Note("Ignoring purchase of exclusive (town) transportation rights.", 4);
-				break
+				break;
 			case AIEvent.ET_ROAD_RECONSTRUCTION:
 				Log.Note("Ignoring road reconstruction.", 4);
-				break
+				break;
 			case AIEvent.ET_VEHICLE_AUTOREPLACED :
 				Log.Note("Ignoring vehicle autoreplacement.", 4);
-				break
+				break;
 			case AIEvent.ET_STORYPAGE_BUTTON_CLICK:
 				Log.Note("Ignoring StoryPage button clicked.", 4);
-				break
+				break;
 			case AIEvent.ET_STORYPAGE_TILE_SELECT:
 				Log.Note("Ignoring StoryPage tile selected.", 4);
-				break
+				break;
 			case AIEvent.ET_STORYPAGE_VEHICLE_SELECT:
 				Log.Note("Ignoring StoryPage vehicle selected.", 4);
-				break
+				break;
 			case AIEvent.ET_COMPANY_RENAMED:
 				Log.Note("Ignoring company renamed.", 4);
-				break
+				break;
 			case AIEvent.ET_PRESIDENT_RENAMED:
 				Log.Note("Ignoring (company) president renamed.", 4);
-				break
+				break;
 
 			case AIEvent.ET_COMPANY_ASK_MERGER:
 				// Accept the merger is the company is a 'DOT' or the value is $2
