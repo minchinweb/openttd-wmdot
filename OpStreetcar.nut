@@ -305,45 +305,41 @@ function OpStreetcar::BuildStations(AllTiles) {
 	return NewStationsTile;
 }
 
-function OpStreetcar::AddRoutes(StationsTile) {
+function OpStreetcar::AddRoutes(StationsTiles) {
 	//	Takes a list of Stations (tiles) and add routes between them
 	//	Actually, it basically does up the pairs and then hands it off
-	//		to the route manager
+	//		to the route manager.
+	//	Pairing is the highest in the top half of the list with the highest in
+	//		the bottom half of the list, and then descending down both lists.
 	//	Assumes Stations is an AIList of AITiles
 	//
 	//	TODO: If given an odd number of stations, one will remain unpaired
 
-	StationsTile.Valuate(AITile.GetCargoAcceptance, this._PaxCargo, 1, 1, 3);
-	StationsTile.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
-
-	// Log.Note(Array.ToString2D(StationsTile), 6);
-	// local TempStations = StationsTile;
-	// local TempStr = "";
-	// for (local i = 0; i < TempStations.Count(); i++ ) {
-	// 	local item = TempStations.Next();
-	// 	TempStr = TempStr + " " + item + ":" + TempStations.GetValue(item);
-	// }
-	// Log.Note(TempStr, 6);
+	StationsTiles.Valuate(AITile.GetCargoAcceptance, this._PaxCargo, 1, 1, 3);
+	StationsTiles.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
 
 	//	split the list
-	local Delta = StationsTile.Count() / 2;
+	local Delta = StationsTiles.Count() / 2;
 	local StationsBottom = AIList();
-	StationsBottom.AddList(StationsTile);
-	StationsBottom.RemoveTop(StationsTile.Count() - Delta);
-	StationsBottom.Sort(AIList.SORT_BY_VALUE, AIList.SORT_ASCENDING);
-	StationsTile.RemoveBottom(Delta);
+	StationsBottom.AddList(StationsTiles);
+	StationsBottom.RemoveTop(StationsTiles.Count() - Delta);
+	StationsBottom.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
+	StationsTiles.RemoveList(StationsBottom);
 
-	local station_1 = StationsTile.Begin();
-	local station_2 = StationsBottom.Begin();
-	while ((station_1 != 0) && (station_2 != 0)) {
+	local station_1_tile = StationsTiles.Begin();
+	local station_2_tile = StationsBottom.Begin();
+	while ((station_1_tile != 0) && (station_2_tile != 0)) {
 		// a returned value of `0` means that we are beyond the end of the
 		// AIList
+
+		local station_1 = AIStation.GetStationID(station_1_tile);
+		local station_2 = AIStation.GetStationID(station_2_tile);
 		
-		Log.Note("Stations at: " + Array.ToStringTiles1D([station_1, station_2], false), 6);
+		Log.Note("Stations № " + station_1 + " and " + station_2, 6);
 		this.RouteManager.AddRoute(station_1, station_2, this._PaxCargo, this.Pathfinder);
 
-		station_1 = StationsTile.Next();
-		station_2 = StationsBottom.Next();
+		station_1_tile = StationsTiles.Next();
+		station_2_tile = StationsBottom.Next();
 	}
 
 	return true;

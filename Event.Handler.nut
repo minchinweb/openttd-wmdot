@@ -30,6 +30,7 @@ class Events {
 	Log = null;
 	Money = null;
 	Manager_Ships = null;
+	Manager_Streetcar = null;
 
 	constructor() {
 		this._NextRun = 0;
@@ -40,6 +41,7 @@ class Events {
 		Log = OpLog();
 		Money = OpMoney();
 		Manager_Ships = ManShips();
+		Manager_Streetcar = ManStreetcars()
 	}
 }
 
@@ -89,6 +91,7 @@ function Events::LinkUp() {
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
 	this.Manager_Ships = WmDOT.Manager_Ships;
+	this.Manager_Streetcar = WmDOT.Manager_Streetcars;
 
 	Log.Note(this.GetName() + " linked up!",3);
 }
@@ -250,7 +253,7 @@ function Events::Run() {
 				local Event2 = AIEventVehicleWaitingInDepot.Convert(Event);
 				local Vehicle = Event2.GetVehicleID();
 				local Result = AIVehicle.SellVehicle(Vehicle);
-				Log.Note("Vehicle " + Vehicle + " sold! : " + Result, 4);
+				Log.Note("Vehicle №" + Vehicle + " sold! : " + Result, 4);
 				break;
 
 			case AIEvent.ET_ENGINE_PREVIEW:

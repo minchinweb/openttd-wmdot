@@ -27,7 +27,7 @@ class ManShips {
 	_NextRun = null;
 	_SleepLength = null;	//	as measured in days
 	_AllRoutes = null;
-	_ShipsToSell = null;
+	_ShipsToSell = null;	//	Vehicles are actually sold in the Event Manager
 
 	Log = null;
 	Money = null;
@@ -151,7 +151,7 @@ function ManShips::Run() {
 					SellVehicle = Waiting.Next();
 					AIVehicle.SendVehicleToDepot(SellVehicle);
 					this._ShipsToSell.push(SellVehicle);
-					Log.Note("Vehicle #" + SellVehicle + " sent to depot to be sold.", 4);
+					Log.Note("Vehicle №" + SellVehicle + " sent to depot to be sold.", 4);
 				} while (!Waiting.IsEnd())
 			}
 		}

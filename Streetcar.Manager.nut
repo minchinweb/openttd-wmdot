@@ -29,7 +29,7 @@ class ManStreetcars {
 	_NextRun = null;
 	_SleepLength = null;	//	as measured in days
 	_AllRoutes = null;
-	_StreetcarsToSell = null;
+	_StreetcarsToSell = null;	//	Vehicles are actually sold in the Event Manager
 	_UseEngineID = null;
 	_MaxDepotSpread = null;		//	maximum distance for a depot from a station before we try and build a closer one
 	
@@ -127,13 +127,13 @@ function ManStreetcars::Run() {
 	
 	for (local i=0; i < this._AllRoutes.len(); i++) {
 		//	Add Streetcars
-		Log.Note("Considering Route #" + i + "... " + AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) + " > " + this._AllRoutes[i]._Capacity + " ? " +(AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) > this._AllRoutes[i]._Capacity),3);
+		Log.Note("Considering Route №" + i + "... " + AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) + " > " + this._AllRoutes[i]._Capacity + " ? " +(AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) > this._AllRoutes[i]._Capacity),3);
 		if (AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) > this._AllRoutes[i]._Capacity) {
 			Money.FundsRequest(AIEngine.GetPrice(AIVehicle.GetEngineType(this._AllRoutes[i]._EngineID)) * 1.1);
 			local MyVehicle;
 			MyVehicle = AIVehicle.CloneVehicle(this._AllRoutes[i]._Depot, this._AllRoutes[i]._EngineID, true);
 			AIVehicle.StartStopVehicle(MyVehicle);
-			Log.Note("New Vehicle Added: " + MyVehicle, 4);
+			Log.Note("New Vehicle Added, ID: " + MyVehicle, 4);
 			this._AllRoutes[i]._LastUpdate = WmDOT.GetTick();
 		} else {
 			//  Delete extra streetcars
@@ -161,64 +161,76 @@ function ManStreetcars::Run() {
 				do {
 					SellVehicle = Waiting.Next();
 					AIVehicle.SendVehicleToDepot(SellVehicle);
-					this._ShipsToSell.push(SellVehicle);					
-					Log.Note("Vehicle #" + SellVehicle + " sent to depot to be sold.", 4);
+					this._StreetcarsToSell.push(SellVehicle);					
+					Log.Note("Vehicle №" + SellVehicle + " sent to depot to be sold.", 4);
 				} while (!Waiting.IsEnd())
 			}
 		}
 	}
 }
 
+/** \brief	Add a streetcar route to be managed.
+ * 	\param	StationStation	StationID of starting station.
+ * 	\param	EndStation		StationID of ending station.
+ *	\param	CargoNo			CargoID of what we are carrying.
+ *  \param  Pathfinder      reference to a pathfinder instance we can use to
+ *							build connections between stations and to depots.
+ *  \note   Will build an initial streetcar for the route as well. Additional
+ *			streetcars will need to be built as the route is managed.
+ */
 function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) {
-	//	this will build the streetcar as well
-	//
-	//	StartStation and EndStation are TilesIDs
-
+	local _start_station_tile = AIBaseStation.GetLocation(StartStation);
+	local _end_station_tile = AIBaseStation.GetLocation(EndStation);
 	Log.Note(
-		"Adding route from '" + MetaLib.Station.GetName(StartStation)
-		+ "' (" + Array.ToStringTiles1D([StartStation]) + ") to '"
-		+ MetaLib.Station.GetName(EndStation) + "' ("
-		+ Array.ToStringTiles1D([EndStation]) + ") for "
-		+ AICargo.GetCargoLabel(CargoNo)
+		"Adding route from '" + AIBaseStation.GetName(StartStation)
+		+ "' (" + Array.ToStringTiles1D([_start_station_tile]) + ")"
+		+ " to '" + AIBaseStation.GetName(EndStation)
+		+ "' (" + Array.ToStringTiles1D([_end_station_tile]) + ") "
+		+ " for " + AICargo.GetCargoLabel(CargoNo),
+		3
 	);
 	
 	local TempRoute = Route();
 	TempRoute._SourceStation = StartStation;
 	TempRoute._DestinationStation = EndStation;
+	TempRoute._Cargo = CargoNo;
 	
 	//	build link between StartStation and EndStation
-	Pathfinder.InitializePath([StartStation], [EndStation]);
+	Pathfinder.InitializePath([_start_station_tile], [_end_station_tile]);
 	Pathfinder.FindPath(10000);
 	if (Pathfinder.GetPath() != null) {
 
 		Money.FundsRequest(Pathfinder.GetBuildCost() * 1.1);
 		Pathfinder.BuildPath();
 
-		TempRoute._EngineID = this._UseEngineID;
-		TempRoute._Depot = GetDepot(StartStation, Pathfinder);
+		// TempRoute._EngineID = this._UseEngineID;
+		TempRoute._Depot = GetDepot(_start_station_tile, Pathfinder);
 		
 		//	build streetcar
-		local RvID = AIVehicle.BuildVehicle(TempRoute._Depot, TempRoute._EngineID);
+		Money.FundsRequest(AIEngine.GetPrice(this._UseEngineID) * 1.1);
+		local RvID = AIVehicle.BuildVehicle(TempRoute._Depot, this._UseEngineID);
 		
 		//	give orders
 		if (AIVehicle.IsValidVehicle(RvID)) {
-			AIVehicle.RefitVehicle(RvID, CargoNo);
+			TempRoute._EngineID = RvID;
+
+			// TODO: Ask for money to retrofit engine
+			AIVehicle.RefitVehicle(RvID, TempRoute._Cargo);
 			Log.Note("Added Vehicle № " + RvID + ".", 4);
 			
 			///	Give Orders!
 			//	start station; full load here
-			AIOrder.AppendOrder(RvID, TempRoute._SourceStation, AIOrder.OF_FULL_LOAD);
-			Log.Note("Order (Start): " + RvID + " : " + Array.ToStringTiles1D([AIStation.GetLocation(TempRoute._SourceStation)]) + ".", 5);
+			AIOrder.AppendOrder(RvID, _start_station_tile, (AIOrder.OF_FULL_LOAD | AIOrder.OF_NON_STOP_INTERMEDIATE));
+			Log.Note("Order (Start): " + RvID + " : " + Array.ToStringTiles1D([_start_station_tile]) + ".", 5);
 			
 			//	end station
-			AIOrder.AppendOrder(RvID, TempRoute._DestinationStation, AIOrder.OF_NONE);
-			Log.Note("Order (End): " + RvID + " : " + Array.ToStringTiles1D([AIStation.GetLocation(TempRoute._DestinationStation)]) + ".", 5);
+			AIOrder.AppendOrder(RvID, _end_station_tile, AIOrder.OF_NON_STOP_INTERMEDIATE);
+			Log.Note("Order (End): " + RvID + " : " + Array.ToStringTiles1D([_end_station_tile]) + ".", 5);
 		
 			// send it on it's merry way!!!
 			AIVehicle.StartStopVehicle(RvID);
 		
-			TempRoute._Capacity = AIVehicle.GetCapacity(RvID, CargoNo);
-			TempRoute._Cargo = CargoNo;
+			TempRoute._Capacity = AIVehicle.GetCapacity(RvID, TempRoute._Cargo);
 			
 			// Name Streetcar - format: Town_Name Cargo R[Route Number]-[incremented number]
 			local temp_name = "";
@@ -229,7 +241,7 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) 
 			AIVehicle.SetName(RvID, temp_name);
 			
 			// Create a Group for the route
-			local group_number = AIGroup.CreateGroup(AIVehicle.VT_ROAD);
+			local group_number = AIGroup.CreateGroup(AIVehicle.VT_ROAD, AIGroup.GROUP_INVALID);
 			AIGroup.SetName(group_number, "Route " + (this._AllRoutes.len() + 1));
 			AIGroup.MoveVehicle(group_number, RvID);
 			TempRoute._GroupID = group_number;
@@ -237,14 +249,23 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) 
 			TempRoute._LastUpdate = WmDOT.GetTick();
 			
 			this._AllRoutes.push(TempRoute);
-			Log.Note("Route added! Road Vehicle " + TempRoute._EngineID + "; " + TempRoute._Capacity + " tons of " + AICargo.GetCargoLabel(TempRoute._Cargo) + "; starting at " + TempRoute._SourceStation + "; build at " + TempRoute._Depot + "; updated at tick " + TempRoute._LastUpdate + ".", 4);
+			Log.Note(
+				"Route added! Road Vehicle " + TempRoute._EngineID + "; "
+				+ TempRoute._Capacity + " tons of "
+				+ AICargo.GetCargoLabel(TempRoute._Cargo) + "; starting at "
+				+ AIBaseStation.GetName(TempRoute._SourceStation)
+				+ "' (" + Array.ToStringTiles1D([AIBaseStation.GetLocation(TempRoute._SourceStation)]) + ")"
+				+ "; built at " + Array.ToStringTiles1D([TempRoute._Depot])
+				+ "; updated at tick " + TempRoute._LastUpdate + ".",
+				4
+			);
 			return true;
 		} else {
-			Log.Warning("     Failed to build vehicle...aborting route building");
+			Log.Warning("     Failed to build vehicle...aborting route building.");
 			return false;
 		}
 	} else {
-		Log.Warning("     Null path...aborting route building");
+		Log.Warning("     Null path...aborting route building.");
 		return false;
 	}
 }
@@ -274,6 +295,9 @@ function ManStreetcars::PickEngine(Cargo)
 function ManStreetcars::RateEngines(EngineID) {
 	//	attempts to find the best rated engine
 	//	Note: for a valuator, the returned value must be an integer (or a bool)
+	//	TODO: We are actually selecting the lowest rated engine
+	//	TODO: Consider monthly station production, or otherwise downrank
+	//			exceptionally large capacity vehicles.
 	
 	local Score = AIEngine.GetCapacity(EngineID).tofloat() * AIEngine.GetMaxSpeed(EngineID).tofloat();
 	local Cost = AIEngine.GetPrice(EngineID).tofloat() / AIEngine.GetMaxAge(EngineID).tofloat();
@@ -326,92 +350,116 @@ function ManStreetcars::GetDepot(StationLocation, Pathfinder, Iterations=225) {
 		myDepot = AllDepots.Begin();
 
 		Log.Note("Found existing Depot.", 8);
-	} else {
-		//	build new one
-		local Walker = MetaLib.SpiralWalker();
-		Walker.Start(StationLocation);
-		
-		local KeepTrying = true;
-		local my_iterations = 0;
-		local TestMode = AITestMode();
-		while(KeepTrying) {
-			local myTile = Walker.Walk();
-			local frontTile;
-			
-			//	Check if we can build here
-			if (AITile.IsBuildable(myTile)) {
-				//	check the four neighbours for being front tiles
-				for (local i=0; i < offsets.len(); i++) {
-					frontTile = myTile + offsets[i];
-					Log.Note("     Trying with front tile" + Array.ToStringTiles1D([frontTile], false), 8);
-					//	if we can build between the front tile and the proposed
-					//	depot tile...
-					local TestMode2 = AITestMode();
-					if (AIRoad.BuildRoad(myTile, frontTile)) {
-						//	run the pathfinder from the front tile to the station
-						local tick = AIController.GetTick();
-						Pathfinder.InitializePath([StationLocation], [myTile]);
-						Pathfinder.PresetStreetcar();
-						local _pf_max_cost = 0;
-						_pf_max_cost = Pathfinder.cost.tile;
-						_pf_max_cost *= 4;
-						_pf_max_cost *= AITile.GetDistanceManhattanToTile(StationLocation, myTile);
-						Pathfinder.cost.max_cost = _pf_max_cost;
-						Pathfinder.FindPath(5000);
 
-						//	See if the pathfinder was successful
-						if (Pathfinder.GetPath() == null) {
-							Log.Warning(
-								"Pathfinding took " + (AIController.GetTick() - tick)
-								+ " ticks and failed. (MD = "
-								+ AIMap.DistanceManhattan(StationLocation, myTile)
-								+ ")."
-							);
-						} else if (Pathfinder.GetPathLength() > 1) {
-							//	if yes, build everything
-							
-							//	pretend build to get cost
-							local TestMode3 = AITestMode();
-							local _costs = AIAccounting();
-							AIRoad.BuildRoadDepot(myTile, frontTile);
-							AIRoad.BuildRoad(myTile, frontTile);
+		// ensure connection between station and depot
+		local tick = AIController.GetTick();
+		Pathfinder.InitializePath([StationLocation], [myDepot]);
+		Pathfinder.PresetStreetcar();
+		Pathfinder.FindPath(5000);
 
-							local _money_needed = 1000;    // fudge factor
-							_money_needed += _costs.GetCosts();
-							_money_needed += Pathfinder.GetBuildCost();
-							_money_needed *= 1.1;
-							Money.FundsRequest(_money_needed);
+		if (Pathfinder.GetPath() == null) {
+			Log.Warning(
+				"Pathfinding took " + (AIController.GetTick() - tick)
+				+ " ticks and failed. (MD = "
+				+ AIMap.DistanceManhattan(StationLocation, myTile)
+				+ ")."
+			);
+		} else if (Pathfinder.GetPathLength() > 1) {
+			Money.FundsRequest(Pathfinder.GetBuildCost() * 1.1);
+			Pathfinder.BuildPath();
 
-							local TestMode4 = AIExecMode();
-							// have to build depot first; if the road is
-							// already in place, the depot will fail to build
-							AIRoad.BuildRoadDepot(myTile, frontTile);
-							AIRoad.BuildRoad(myTile, frontTile);
-							Pathfinder.BuildPath();
-							myDepot = myTile;
-							KeepTrying = false;
-
-							Log.Note(
-								"     Depot built! Took "
-								+ (AIController.GetTick() - tick) + " ticks.",
-								8
-							);
-						}
-					} else {
-						Log.Note("          Failed to build road connection.", 8);
-					}
-				}
-			} else {
-				Log.Note("     Tile is not buildable.", 8);
-			}
-			my_iterations++;
-			if (my_iterations > Iterations) {
-				KeepTrying = false;
-				myDepot = false;
-				Log.Note("Failed to find workable streetcar depot location.", 3);
-			}
+			return myDepot;
 		}
 	}
+
+	// implied "else"
+
+	//	build new one
+	local Walker = MetaLib.SpiralWalker();
+	Walker.Start(StationLocation);
 	
+	local KeepTrying = true;
+	local my_iterations = 0;
+	local TestMode = AITestMode();
+	while(KeepTrying) {
+		local myTile = Walker.Walk();
+		local frontTile;
+		
+		//	Check if we can build here
+		if (AITile.IsBuildable(myTile)) {
+			//	check the four neighbours for being front tiles
+			for (local i=0; i < offsets.len(); i++) {
+				frontTile = myTile + offsets[i];
+				Log.Note("     Trying with front tile" + Array.ToStringTiles1D([frontTile], false), 8);
+				//	if we can build between the front tile and the proposed
+				//	depot tile...
+				local TestMode2 = AITestMode();
+				if (AIRoad.BuildRoad(myTile, frontTile)) {
+					//	run the pathfinder from the front tile to the station
+					local tick = AIController.GetTick();
+					Pathfinder.InitializePath([StationLocation], [myTile]);
+					Pathfinder.PresetStreetcar();
+					local _pf_max_cost = 0;
+					_pf_max_cost = Pathfinder.cost.tile;
+					_pf_max_cost *= 4;
+					_pf_max_cost *= AITile.GetDistanceManhattanToTile(StationLocation, myTile);
+					Pathfinder.cost.max_cost = _pf_max_cost;
+					Pathfinder.FindPath(5000);
+
+					//	See if the pathfinder was successful
+					if (Pathfinder.GetPath() == null) {
+						Log.Warning(
+							"Pathfinding took " + (AIController.GetTick() - tick)
+							+ " ticks and failed. (MD = "
+							+ AIMap.DistanceManhattan(StationLocation, myTile)
+							+ ")."
+						);
+					} else if (Pathfinder.GetPathLength() > 1) {
+						//	if yes, build everything
+						
+						//	pretend build to get cost
+						local TestMode3 = AITestMode();
+						local _costs = AIAccounting();
+						AIRoad.BuildRoadDepot(myTile, frontTile);
+						AIRoad.BuildRoad(myTile, frontTile);
+
+						local _money_needed = 1000;    // fudge factor
+						_money_needed += _costs.GetCosts();
+						_money_needed += Pathfinder.GetBuildCost();
+						_money_needed *= 1.1;  // bump up to keep ahead of inflations, etc
+						Money.FundsRequest(_money_needed);
+
+						local TestMode4 = AIExecMode();
+						// have to build depot first; if the road is
+						// already in place, the depot will fail to build
+						AIRoad.BuildRoadDepot(myTile, frontTile);
+						AIRoad.BuildRoad(myTile, frontTile);
+						Pathfinder.BuildPath();
+						myDepot = myTile;
+						KeepTrying = false;
+
+						Log.Note(
+							"     Depot built! Took "
+							+ (AIController.GetTick() - tick) + " ticks.",
+							8
+						);
+					}
+				} else {
+					Log.Note("          Failed to build road connection.", 8);
+				}
+			}
+		} else {
+			Log.Note("     Tile is not buildable.", 8);
+		}
+		my_iterations++;
+		if (my_iterations > Iterations) {
+			KeepTrying = false;
+			myDepot = false;
+			Log.Note("Failed to find workable streetcar depot location.", 3);
+		}
+	}
+
 	return myDepot;
 }
+
+// EOF
