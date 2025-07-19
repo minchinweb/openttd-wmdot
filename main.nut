@@ -530,8 +530,11 @@ function WmDOT::TheGreatLinkUp() {
 	Freeways.LinkUp();
 	StreetCars.LinkUp();
 	Manager_Streetcars.LinkUp();
-	Log.Note("The Great Link Up is Complete!",1);
-	Log.Note("",1);
+
+	Hibernia.StartPathfinder();
+
+	Log.Note("The Great Link Up is Complete!", 1);
+	Log.Note("", 1);
 }
 
 

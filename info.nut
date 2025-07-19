@@ -45,7 +45,7 @@ class WmDOT extends AIInfo
 		AddSetting({name = "OpDOT_RebuildAttempts", description = "     Build Attemps", min_value = 1, max_value = 15, easy_value = 2, medium_value = 2, hard_value = 2, custom_value = 2, flags = (CONFIG_DEVELOPER, CONFIG_INGAME)});
 		AddSetting({name = "Freeways", description = "     Build Freeways", easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1, flags = CONFIG_BOOLEAN});	// 1 == true
 
-		AddSetting({name = "OpHibernia", description = "--  Operation Hibernia  --  is ", easy_value = 0, medium_value = 0, hard_value = 0, custom_value = 0, flags = CONFIG_BOOLEAN});
+		AddSetting({name = "OpHibernia", description = "--  Operation Hibernia  --  is ", easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1, flags = CONFIG_BOOLEAN});
 //		AddLabels("OpHibernia", {_0 = "no go ------------------- :,-(", _1 = "GO!  -------------------- :-)"});
 
 //		AddLabels("Grid_Spacing", {_12 = "12 (default)", _14 = "14 (min. for full-sized airports)"});

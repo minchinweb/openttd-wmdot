@@ -218,11 +218,11 @@ function OpDOT::Run() {
 	//		7 - the AI naps ... zzz ...
 
 	this._NextRun = AIController.GetTick();
-	Log.Note("OpDOT running in Mode " + this._Mode + " at tick " + this._NextRun + ".",1);
+	Log.Note("OpDOT running in Mode " + this._Mode + " at tick " + this._NextRun + ".", 1);
 
 	if ((WmDOT.GetSetting("OpDOT") != 1) || (AIGameSettings.IsDisabledVehicleType(AIVehicle.VT_ROAD) == true)) {
 		this._NextRun = AIController.GetTick() + 13001;			//	6500 ticks is about a year
-		Log.Note("** OpDOT has been disabled. **",0);
+		Log.Note("** OpDOT has been disabled. **", 0);
 		return;
 	}
 

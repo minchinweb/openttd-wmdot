@@ -1,7 +1,7 @@
-﻿/*	Streetcar Manager v.3, [2013-01-16]
+﻿/*	Streetcar Manager v.3, [2025-07-19]
  *		part of WmDOT v.15.1
  *		modified version of Ship Manager v.2
- *	Copyright © 2012-13 by W. Minchin. For more info,
+ *	Copyright © 2012-13, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
  *	Permission is granted to you to use, copy, modify, merge, publish, 
@@ -21,8 +21,8 @@
 
 class ManStreetcars {
 	function GetVersion()       { return 3; }
-	function GetRevision()		{ return 130116; }
-	function GetDate()          { return "2013-01-16"; }
+	function GetRevision()		{ return 250719; }
+	function GetDate()          { return "2025-07-19"; }
 	function GetName()          { return "Streetcar Manager"; }
 	
 	
@@ -30,7 +30,6 @@ class ManStreetcars {
 	_SleepLength = null;	//	as measured in days
 	_AllRoutes = null;
 	_StreetcarsToSell = null;	//	Vehicles are actually sold in the Event Manager
-	_UseEngineID = null;
 	_MaxDepotSpread = null;		//	maximum distance for a depot from a station before we try and build a closer one
 	
 	Log = null;
@@ -42,7 +41,6 @@ class ManStreetcars {
 		this._SleepLength = 30;
 		this._AllRoutes = [];
 		this._StreetcarsToSell = [];
-		this._UseEngineID = this.PickEngine(Helper.GetPAXCargo());
 		this._MaxDepotSpread = 15;
 		
 		this.Settings = this.Settings(this);
@@ -118,9 +116,7 @@ function ManStreetcars::LinkUp() {
 
 
 function ManStreetcars::Run() {
-	Log.Note("Streetcar Manager running at tick " + AIController.GetTick() + ".",1);
-	
-	this._UseEngineID = this.PickEngine(Helper.GetPAXCargo());
+	Log.Note("Streetcar Manager running at tick " + AIController.GetTick() + ".", 1);
 	
 	//	reset counter
 	this._NextRun = AIController.GetTick() + this._SleepLength * 17;	//	SleepLength in days
@@ -203,12 +199,20 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) 
 		Money.FundsRequest(Pathfinder.GetBuildCost() * 1.1);
 		Pathfinder.BuildPath();
 
-		// TempRoute._EngineID = this._UseEngineID;
+		local start_station_cargo_acceptance = AITile.GetCargoAcceptance(
+			_start_station_tile,
+			TempRoute._Cargo,
+			1,
+			1,
+			AIStation.GetCoverageRadius(AIStation. STATION_BUS_STOP)
+		);
+		Log.Note("Pick an engine for " +  start_station_cargo_acceptance + " 'tons' of Cargo № " + TempRoute._Cargo, 4);
+		TempRoute._EngineID = PickEngine(TempRoute._Cargo, start_station_cargo_acceptance);
 		TempRoute._Depot = GetDepot(_start_station_tile, Pathfinder);
 		
 		//	build streetcar
-		Money.FundsRequest(AIEngine.GetPrice(this._UseEngineID) * 1.1);
-		local RvID = AIVehicle.BuildVehicle(TempRoute._Depot, this._UseEngineID);
+		Money.FundsRequest(AIEngine.GetPrice(TempRoute._EngineID) * 1.1);
+		local RvID = AIVehicle.BuildVehicle(TempRoute._Depot, TempRoute._EngineID);
 		
 		//	give orders
 		if (AIVehicle.IsValidVehicle(RvID)) {
@@ -270,8 +274,7 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) 
 	}
 }
 
-function ManStreetcars::PickEngine(Cargo)
-{
+function ManStreetcars::PickEngine(Cargo, CargoAcceptanceRating) {
 	//	picks the 'engine' to use
 	
 	//	start with all engines
@@ -279,42 +282,20 @@ function ManStreetcars::PickEngine(Cargo)
 	//	only streetcars
 	AllEngines.Valuate(AIEngine.GetRoadType);
 	AllEngines.KeepValue(AIRoad.ROADTYPE_TRAM);
-	//	only ones that can haul passengers
-	AllEngines.Valuate(AIEngine.CanRefitCargo, Cargo);
-	AllEngines.KeepValue(1);  // `true`
+
+	// convert from sum of Cargo Acceptance (in 1/8ths) to (estimated) monthly
+	// production
+	local TargetCapacity = CargoAcceptanceRating * 1;
+
 	//	rate the remaining engines
-	AllEngines.Valuate(RateEngines);
+	AllEngines.Valuate(MetaLib.Engine.Rate2, Cargo, TargetCapacity);
 	
 	//	pick highest rated
-	AllEngines.Sort(AIList.SORT_BY_VALUE, AIList.SORT_ASCENDING);
+	AllEngines.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
 	local _my_engine_id = AllEngines.Begin();
-	this._UseEngineID = _my_engine_id;
-	return this._UseEngineID;
+	return _my_engine_id;
 }
 
-function ManStreetcars::RateEngines(EngineID) {
-	//	attempts to find the best rated engine
-	//	Note: for a valuator, the returned value must be an integer (or a bool)
-	//	TODO: We are actually selecting the lowest rated engine
-	//	TODO: Consider monthly station production, or otherwise downrank
-	//			exceptionally large capacity vehicles.
-	
-	local Score = AIEngine.GetCapacity(EngineID).tofloat() * AIEngine.GetMaxSpeed(EngineID).tofloat();
-	local Cost = AIEngine.GetPrice(EngineID).tofloat() / AIEngine.GetMaxAge(EngineID).tofloat();
-	Cost += AIEngine.GetRunningCost(EngineID).tofloat();
-	//	discount articulated??
-	Score = Score / Cost;
-	Score *= 1000;
-	Score = Score.tointeger();
-
-	_MinchinWeb_Log_.Note(
-		"Engine Rated: " + EngineID + " : " + Score + " : "
-		+ AIEngine.GetName(EngineID),
-		8
-	);
-
-	return Score;
-}
 
 /** \brief  Find or build the nearest Streetcara depot
  *  \param  StationLocation     An AITile
@@ -340,7 +321,7 @@ function ManStreetcars::GetDepot(StationLocation, Pathfinder, Iterations=225) {
 	// look for an existing depot close enough
 	local AllDepots = AIDepotList(AITile.TRANSPORT_ROAD);
 	AllDepots.Valuate(AIRoad.HasRoadType, AIRoad.ROADTYPE_TRAM);
-	AllDepots.KeepValue(1);  // True
+	AllDepots.KeepValue(true.tointeger());
 	AllDepots.Valuate(AIMap.DistanceManhattan, StationLocation);
 	AllDepots.KeepBelowValue(this._MaxDepotSpread + 1);
 	
