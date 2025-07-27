@@ -26,7 +26,7 @@ import("util.superlib", "SuperLib", 40);		//	For loan management
 	Helper <- SuperLib.Helper;
 	Direction <- SuperLib.Direction;
 
-require("OpDOT.nut");				//	OperationDOT
+require("OpDOT.nut");				//	Operation Department of Transportation (DOT)
 require("OpMoney.nut");				//	Operation Money
 require("TownRegistrar.nut");		//	Town Registrar
 require("Neighbourhood.nut");		//	Neighbourhood Class
@@ -137,6 +137,7 @@ function WmDOT::Start() {
 		if (Time > Freeways.State.NextRun)				{ Freeways.Run(); }
 		if (Time > StreetCars.State.NextRun)			{ StreetCars.Run(); }
 		if (Time > Hibernia.State.NextRun)				{ Hibernia.Run(); }
+		// if (Time > Manager_Ships.State.NextRun)			{ Manager_Ships.RunEngineCheck(); }
 		if (Time > Manager_Ships.State.NextRun)			{ Manager_Ships.Run(); }
 		if (Time > Manager_Streetcars.State.NextRun)	{ Manager_Streetcars.Run(); }
 		if (Time > Event.State.NextRun)					{ Event.Run(); }
@@ -501,7 +502,7 @@ function WmDOT::TileIsWhatTown(TileIn) {
 
 	for (local i = 0; i < AITown.GetTownCount(); i++) {
 		TestValue = AITown.IsWithinTownInfluence(i, TileIn);
-//		AILog.Info("          " + i + ". Testing Town " + " and returns " + TestValue);
+		// AILog.Info("          " + i + ". Testing Town " + " and returns " + TestValue);
 		if (TestValue == true) {
 			return i;
 		}

@@ -43,6 +43,8 @@ class OpStreetcar {
 	Pathfinder = null;
 	RouteManager = null;
 
+	STATION_SPACING = null;
+
 	constructor() {
 		this._NextRun = 1;
 		this._RoadType = AIRoad.ROADTYPE_TRAM;
@@ -56,6 +58,8 @@ class OpStreetcar {
 		Money = OpMoney();
 		Pathfinder = StreetcarPathfinder();
 		Pathfinder.PresetStreetcar();
+
+		STATION_SPACING = 4;
 	}
 
 }
@@ -121,7 +125,13 @@ function OpStreetcar::LinkUp()
 }
 
 function OpStreetcar::Run() {
-	Log.Note("Streetcar Manager running at tick " + AIController.GetTick() + ".",1);
+	Log.Note("OpStreetcar running at tick " + AIController.GetTick() + ".", 1);
+
+	if ((WmDOT.GetSetting("OpStreetcar") != 1) || (AIGameSettings.IsDisabledVehicleType(AIVehicle.VT_ROAD) == true)) {
+		this._NextRun = AIController.GetTick() + 13001;			//	6500 ticks is about a year
+		Log.Note("** OpStreetcar has been disabled. **", 0);
+		return;
+	}
 
 	Log.Note("Rating Tiles...", 2);
 	local RatedTiles = RateTiles(this._StartTile);
@@ -146,8 +156,28 @@ function OpStreetcar::RateTiles(StartTile) {
 	//	tile that will accept passengers
 	local AllTiles = AIList();
 	local IgnoredTiles = AIList();
-	AllTiles.AddItem(StartTile, AITile.GetCargoAcceptance(StartTile, this._PaxCargo, 1, 1, 3));
-	Log.Note("Starting at tile:" + Array.ToStringTiles1D([StartTile]) + "  score: " + AITile.GetCargoAcceptance(StartTile, this._PaxCargo, 1, 1, 3) + "/8", 3);
+	AllTiles.AddItem(
+		StartTile,
+		AITile.GetCargoAcceptance(
+			StartTile,
+			this._PaxCargo,
+			1,
+			1,
+			AIStation.GetCoverageRadius(AIStation. STATION_BUS_STOP)
+		)
+	);
+	Log.Note(
+		"Starting at tile:" + Array.ToStringTiles1D([StartTile])
+		+ "  score: "
+		+ AITile.GetCargoAcceptance(
+			StartTile,
+			this._PaxCargo,
+			1,
+			1,
+			AIStation.GetCoverageRadius(AIStation. STATION_BUS_STOP)
+		) + "/8",
+		3
+	);
 	local AddedCheck = true;
 	local i = 0;
 	do {
@@ -241,11 +271,10 @@ function OpStreetcar::DiscountForStation(AllTiles, StationLocation) {
 	local BaseX = AIMap.GetTileX(StationLocation);
 	local BaseY = AIMap.GetTileY(StationLocation);
 
-	//	every tile within 3 tiles is rated zero (actually, we remove them from
-	//	the list)
-	local zero_dist = 3;
-	for (local ix = -zero_dist; ix <= zero_dist; ix++) {
-		for (local iy = -zero_dist; iy <= zero_dist; iy++) {
+	//	every tile within 4 tiles (controlled by this.STATION_SPACING) is rated
+	// 		zero (actually, we remove them from the list)
+	for (local ix = -this.STATION_SPACING; ix <= this.STATION_SPACING; ix++) {
+		for (local iy = -this.STATION_SPACING; iy <= this.STATION_SPACING; iy++) {
 			local Test = AIMap.GetTileIndex(ix + BaseX, iy + BaseY);
 			// Log.Note("    ix=" + ix + "; iy=" + iy + "; Test=" + Array.ToStringTiles1D([Test]) + " : " + AllTiles.HasItem(Test), 7);
 			if (AllTiles.HasItem(Test)) {
@@ -255,8 +284,8 @@ function OpStreetcar::DiscountForStation(AllTiles, StationLocation) {
 		}
 	}
 
-	//	for every tiles that falls within the catchment area of the 'Station
-	//	    Location', the score reduced by 8 and then is cut in half
+	//	for every tile (left) that falls within the catchment area of the
+	//	    'Station Location', the score reduced by 8 and then is cut in half
 	local catchment = AIStation.GetCoverageRadius(AIStation.STATION_BUS_STOP);
 	for (local ix = -catchment; ix <= catchment; ix++) {
 		for (local iy = -catchment; iy <= catchment; iy++) {

@@ -24,7 +24,7 @@ class WmDOT extends AIInfo
 	function GetDate()          { return "2025-07-14"; }
 	function GetShortName()     { return "}}mW"; }	//	0x576D7D7D
 	function CreateInstance()   { return "WmDOT"; }
-	function GetAPIVersion()    { return "1.9"; }
+	function GetAPIVersion()    { return "1.11"; }
 	function UseAsRandomAI()	{ return false; }
 	function GetURL()			{ return "http://www.tt-forums.net/viewtopic.php?f=65&t=53698"; }
 //	function GetURL()			{ return "http://code.google.com/p/openttd-noai-wmdot/issues/"; }
@@ -42,7 +42,7 @@ class WmDOT extends AIInfo
 //		AddLabels("OpDOT", {_0 = "no go ----------------------- :,-(", _1 = "GO!  ------------------------ :-)"});
 		AddSetting({name = "OpDOT_MinTownSize", description = "     The minimum size of towns to connect", min_value = 0, max_value = 10000, easy_value = 100, medium_value = 500, hard_value = 1000, custom_value = 300, flags = CONFIG_INGAME, step_size=50});
 		AddSetting({name = "TownRegistrar_AtlasSize", description = "     Max Atlas Size", min_value = 20, max_value = 150, easy_value = 50, medium_value = 50, hard_value = 50, custom_value = 50, step_size = 5, flags = CONFIG_DEVELOPER});
-		AddSetting({name = "OpDOT_RebuildAttempts", description = "     Build Attemps", min_value = 1, max_value = 15, easy_value = 2, medium_value = 2, hard_value = 2, custom_value = 2, flags = (CONFIG_DEVELOPER, CONFIG_INGAME)});
+		AddSetting({name = "OpDOT_RebuildAttempts", description = "     Build Attempts", min_value = 1, max_value = 15, easy_value = 2, medium_value = 2, hard_value = 2, custom_value = 2, flags = (CONFIG_DEVELOPER, CONFIG_INGAME)});
 		AddSetting({name = "Freeways", description = "     Build Freeways", easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1, flags = CONFIG_BOOLEAN});	// 1 == true
 
 		AddSetting({name = "OpHibernia", description = "--  Operation Hibernia  --  is ", easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1, flags = CONFIG_BOOLEAN});

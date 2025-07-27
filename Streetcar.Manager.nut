@@ -4,8 +4,8 @@
  *	Copyright © 2012-13, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
- *	Permission is granted to you to use, copy, modify, merge, publish, 
- *	distribute, sublincense, and/or sell this software, and provide these 
+ *	Permission is granted to you to use, copy, modify, merge, publish,
+ *	distribute, sublincense, and/or sell this software, and provide these
  *	rights to others, provided:
  *
  *	+ The above copyright notice and this permission notice shall be included
@@ -24,25 +24,25 @@ class ManStreetcars {
 	function GetRevision()		{ return 250719; }
 	function GetDate()          { return "2025-07-19"; }
 	function GetName()          { return "Streetcar Manager"; }
-	
-	
+
+
 	_NextRun = null;
 	_SleepLength = null;	//	as measured in days
 	_AllRoutes = null;
 	_StreetcarsToSell = null;	//	Vehicles are actually sold in the Event Manager
 	_MaxDepotSpread = null;		//	maximum distance for a depot from a station before we try and build a closer one
-	
+
 	Log = null;
 	Money = null;
 	// Pathfinder = null;
-	
+
 	constructor() {
 		this._NextRun = 0;
 		this._SleepLength = 30;
 		this._AllRoutes = [];
 		this._StreetcarsToSell = [];
 		this._MaxDepotSpread = 15;
-		
+
 		this.Settings = this.Settings(this);
 		this.State = this.State(this);
 		Log = OpLog();
@@ -65,7 +65,7 @@ class Route {
 class ManStreetcars.Settings {
 
 	_main = null;
-	
+
 	function _set(idx, val) {
 		switch (idx) {
 			case "SleepLength":			this._main._SleepLength = val; break;
@@ -74,7 +74,7 @@ class ManStreetcars.Settings {
 		}
 		return val;
 	}
-		
+
 	function _get(idx) {
 		switch (idx) {
 			case "SleepLength":			return this._main._SleepLength; break;
@@ -82,7 +82,7 @@ class ManStreetcars.Settings {
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
-	
+
 	constructor(main) {
 		this._main = main;
 	}
@@ -91,7 +91,7 @@ class ManStreetcars.Settings {
 class ManStreetcars.State {
 
 	_main = null;
-	
+
 	function _get(idx) {
 		switch (idx) {
 			// case "Mode":			return this._main._Mode; break;
@@ -101,7 +101,7 @@ class ManStreetcars.State {
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
-	
+
 	constructor(main) {
 		this._main = main;
 	}
@@ -117,10 +117,10 @@ function ManStreetcars::LinkUp() {
 
 function ManStreetcars::Run() {
 	Log.Note("Streetcar Manager running at tick " + AIController.GetTick() + ".", 1);
-	
+
 	//	reset counter
 	this._NextRun = AIController.GetTick() + this._SleepLength * 17;	//	SleepLength in days
-	
+
 	for (local i=0; i < this._AllRoutes.len(); i++) {
 		//	Add Streetcars
 		Log.Note("Considering Route №" + i + "... " + AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) + " > " + this._AllRoutes[i]._Capacity + " ? " +(AIStation.GetCargoWaiting(this._AllRoutes[i]._SourceStation, this._AllRoutes[i]._Cargo) > this._AllRoutes[i]._Capacity),3);
@@ -130,7 +130,7 @@ function ManStreetcars::Run() {
 			MyVehicle = AIVehicle.CloneVehicle(this._AllRoutes[i]._Depot, this._AllRoutes[i]._EngineID, true);
 			AIVehicle.StartStopVehicle(MyVehicle);
 			Log.Note("New Vehicle Added, ID: " + MyVehicle, 4);
-			this._AllRoutes[i]._LastUpdate = WmDOT.GetTick();
+			this._AllRoutes[i]._LastUpdate = AIController.GetTick();
 		} else {
 			//  Delete extra streetcars
 			//	if there are three streetcars waiting at to fill up, delete them
@@ -157,7 +157,7 @@ function ManStreetcars::Run() {
 				do {
 					SellVehicle = Waiting.Next();
 					AIVehicle.SendVehicleToDepot(SellVehicle);
-					this._StreetcarsToSell.push(SellVehicle);					
+					this._StreetcarsToSell.push(SellVehicle);
 					Log.Note("Vehicle №" + SellVehicle + " sent to depot to be sold.", 4);
 				} while (!Waiting.IsEnd())
 			}
@@ -185,12 +185,12 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) 
 		+ " for " + AICargo.GetCargoLabel(CargoNo),
 		3
 	);
-	
+
 	local TempRoute = Route();
 	TempRoute._SourceStation = StartStation;
 	TempRoute._DestinationStation = EndStation;
 	TempRoute._Cargo = CargoNo;
-	
+
 	//	build link between StartStation and EndStation
 	Pathfinder.InitializePath([_start_station_tile], [_end_station_tile]);
 	Pathfinder.FindPath(10000);
@@ -209,11 +209,11 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) 
 		Log.Note("Pick an engine for " +  start_station_cargo_acceptance + " 'tons' of Cargo № " + TempRoute._Cargo, 4);
 		TempRoute._EngineID = PickEngine(TempRoute._Cargo, start_station_cargo_acceptance);
 		TempRoute._Depot = GetDepot(_start_station_tile, Pathfinder);
-		
+
 		//	build streetcar
 		Money.FundsRequest(AIEngine.GetPrice(TempRoute._EngineID) * 1.1);
 		local RvID = AIVehicle.BuildVehicle(TempRoute._Depot, TempRoute._EngineID);
-		
+
 		//	give orders
 		if (AIVehicle.IsValidVehicle(RvID)) {
 			TempRoute._EngineID = RvID;
@@ -221,21 +221,21 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) 
 			// TODO: Ask for money to retrofit engine
 			AIVehicle.RefitVehicle(RvID, TempRoute._Cargo);
 			Log.Note("Added Vehicle № " + RvID + ".", 4);
-			
+
 			///	Give Orders!
 			//	start station; full load here
 			AIOrder.AppendOrder(RvID, _start_station_tile, (AIOrder.OF_FULL_LOAD | AIOrder.OF_NON_STOP_INTERMEDIATE));
 			Log.Note("Order (Start): " + RvID + " : " + Array.ToStringTiles1D([_start_station_tile]) + ".", 5);
-			
+
 			//	end station
 			AIOrder.AppendOrder(RvID, _end_station_tile, AIOrder.OF_NON_STOP_INTERMEDIATE);
 			Log.Note("Order (End): " + RvID + " : " + Array.ToStringTiles1D([_end_station_tile]) + ".", 5);
-		
+
 			// send it on it's merry way!!!
 			AIVehicle.StartStopVehicle(RvID);
-		
+
 			TempRoute._Capacity = AIVehicle.GetCapacity(RvID, TempRoute._Cargo);
-			
+
 			// Name Streetcar - format: Town_Name Cargo R[Route Number]-[incremented number]
 			local temp_name = "";
 			temp_name += AITown.GetName(AIStation.GetNearestTown(TempRoute._SourceStation));
@@ -243,15 +243,15 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) 
 			temp_name = temp_name + " " + AICargo.GetCargoLabel(CargoNo) + " R";
 			temp_name += (this._AllRoutes.len() + 1) + "-1";
 			AIVehicle.SetName(RvID, temp_name);
-			
+
 			// Create a Group for the route
 			local group_number = AIGroup.CreateGroup(AIVehicle.VT_ROAD, AIGroup.GROUP_INVALID);
 			AIGroup.SetName(group_number, "Route " + (this._AllRoutes.len() + 1));
 			AIGroup.MoveVehicle(group_number, RvID);
 			TempRoute._GroupID = group_number;
-			
-			TempRoute._LastUpdate = WmDOT.GetTick();
-			
+
+			TempRoute._LastUpdate = AIController.GetTick();
+
 			this._AllRoutes.push(TempRoute);
 			Log.Note(
 				"Route added! Road Vehicle " + TempRoute._EngineID + "; "
@@ -276,7 +276,7 @@ function ManStreetcars::AddRoute(StartStation, EndStation, CargoNo, Pathfinder) 
 
 function ManStreetcars::PickEngine(Cargo, CargoAcceptanceRating) {
 	//	picks the 'engine' to use
-	
+
 	//	start with all engines
 	local AllEngines = AIEngineList(AIVehicle.VT_ROAD);
 	//	only streetcars
@@ -289,7 +289,7 @@ function ManStreetcars::PickEngine(Cargo, CargoAcceptanceRating) {
 
 	//	rate the remaining engines
 	AllEngines.Valuate(MetaLib.Engine.Rate2, Cargo, TargetCapacity);
-	
+
 	//	pick highest rated
 	AllEngines.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
 	local _my_engine_id = AllEngines.Begin();
@@ -312,19 +312,19 @@ function ManStreetcars::PickEngine(Cargo, CargoAcceptanceRating) {
 function ManStreetcars::GetDepot(StationLocation, Pathfinder, Iterations=225) {
 	//	set roadtype
 	AIRoad.SetCurrentRoadType(AIRoad.ROADTYPE_TRAM);
-	
+
 	local myDepot;
 	// local StationLocation = AIStation.GetLocation(Station);
 	local offsets = [AIMap.GetTileIndex(0, 1), AIMap.GetTileIndex(0, -1),
 	                 AIMap.GetTileIndex(1, 0), AIMap.GetTileIndex(-1, 0)];
-	
+
 	// look for an existing depot close enough
 	local AllDepots = AIDepotList(AITile.TRANSPORT_ROAD);
 	AllDepots.Valuate(AIRoad.HasRoadType, AIRoad.ROADTYPE_TRAM);
 	AllDepots.KeepValue(true.tointeger());
 	AllDepots.Valuate(AIMap.DistanceManhattan, StationLocation);
 	AllDepots.KeepBelowValue(this._MaxDepotSpread + 1);
-	
+
 	if (AllDepots.Count() > 0) {
 		//	pick the closest depot
 		AllDepots.Sort(AIList.SORT_BY_VALUE, AIList.SORT_DESCENDING);
@@ -358,14 +358,14 @@ function ManStreetcars::GetDepot(StationLocation, Pathfinder, Iterations=225) {
 	//	build new one
 	local Walker = MetaLib.SpiralWalker();
 	Walker.Start(StationLocation);
-	
+
 	local KeepTrying = true;
 	local my_iterations = 0;
 	local TestMode = AITestMode();
 	while(KeepTrying) {
 		local myTile = Walker.Walk();
 		local frontTile;
-		
+
 		//	Check if we can build here
 		if (AITile.IsBuildable(myTile)) {
 			//	check the four neighbours for being front tiles
@@ -397,7 +397,7 @@ function ManStreetcars::GetDepot(StationLocation, Pathfinder, Iterations=225) {
 						);
 					} else if (Pathfinder.GetPathLength() > 1) {
 						//	if yes, build everything
-						
+
 						//	pretend build to get cost
 						local TestMode3 = AITestMode();
 						local _costs = AIAccounting();

@@ -60,7 +60,7 @@ class OpHibernia {
 		this._SleepLength = 90;
 		// Only keep industries serviced below this percentage last month
 		// Turn this into an AI setting??
-		this._TransportedCutOff = 50;	
+		this._TransportedCutOff = 50;
 
 		this._Atlas = Atlas();
 		this._AtlasModel = ModelType.DISTANCE_SHIP;
@@ -158,7 +158,7 @@ function OpHibernia::StartPathfinder() {
 
 function OpHibernia::Run() {
 
-	local tick = WmDOT.GetTick();
+	local tick = AIController.GetTick();
 	Log.Note("OpHibernia running at tick " + tick + ".",1);
 
 	if ((WmDOT.GetSetting("OpHibernia") != 1) || (AIGameSettings.IsDisabledVehicleType(AIVehicle.VT_WATER) == true)) {
@@ -176,23 +176,23 @@ function OpHibernia::Run() {
 	Log.Note("Keep " + MyIndustries.Count() + " industries.", 2);
 
 	if (MyIndustries.Count() > 0) {
-		//	Cycle through MyIndustries and come up with the list of cargos they produce
+		//	Cycle through MyIndustries and come up with the list of cargoes they produce
 		local Produced;
-		local MyCargos = [];
+		local MyCargoes = [];
 		MyIndustries.Valuate(Helper.ItemValuator);
 		foreach (IndustryNo in MyIndustries) {
 			Produced = AICargoList_IndustryProducing(IndustryNo);
 			Produced.Valuate(Helper.ItemValuator);
-			Log.Note("Industry № " + IndustryNo + " produces " + Produced.Count() + " cargos.   (" + AIIndustry.GetName(IndustryNo) + ")",4);
+			Log.Note("Industry № " + IndustryNo + " produces " + Produced.Count() + " cargoes.   (" + AIIndustry.GetName(IndustryNo) + ")",4);
 			foreach (CargoNo in Produced) {
-				if (Array.ContainedIn1D(MyCargos, CargoNo) == false) {
-					MyCargos.push(CargoNo);
+				if (Array.ContainedIn1D(MyCargoes, CargoNo) == false) {
+					MyCargoes.push(CargoNo);
 					Log.Note("Adding Cargo № " + CargoNo + " (" + AICargo.GetCargoLabel(CargoNo) + ")", 2);
 				}
 			}
 		}
 
-		foreach (CargoNo in MyCargos) {
+		foreach (CargoNo in MyCargoes) {
 			//	TO-DO: Add a check here to see if we can actually transport the cargo in question!
 			//				SuperLib.Engine.DoesEngineExistForCargo(cargo_id, vehicle_type = -1, no_trams = true, no_articulated = true, only_small_aircrafts = false)
 
@@ -254,10 +254,10 @@ function OpHibernia::Run() {
 			}	// end of  foreach (Location in InIndustries)
 
 			///	Apply Traffic Model, and select best pair
-			local tick2 = WmDOT.GetTick();
+			local tick2 = AIController.GetTick();
 			this._Atlas.SetModel(this._AtlasModel);
 			this._Atlas.RunModel();
-			Log.Note("Atlas.RunModel() took " + (WmDOT.GetTick() - tick2) + " ticks.", 2);
+			Log.Note("Atlas.RunModel() took " + (AIController.GetTick() - tick2) + " ticks.", 2);
 			//	TO-DO:	Apply maximum distance, based on ship travel speeds
 
 			local KeepTrying = true;
@@ -375,7 +375,7 @@ function OpHibernia::Run() {
 						local OldStarts2 = Starts2;
 						start = Starts2.Begin();
 						end = Ends2.Begin();
-						tick2 = WmDOT.GetTick();
+						tick2 = AIController.GetTick();
 						local WBCTries = 0;
 						local WBCResults;
 
@@ -387,12 +387,12 @@ function OpHibernia::Run() {
 							} while (WBCResults == false)
 							WBCTries ++;
 							if (WBCResults != null) {
-								Log.Note("Waterbody Check returns positive. Took " + WBCTries + " tries and " + (WmDOT.GetTick() - tick2) + " ticks.", 3);
+								Log.Note("Waterbody Check returns positive. Took " + WBCTries + " tries and " + (AIController.GetTick() - tick2) + " ticks.", 3);
 								KeepTrying2 = false;
 							} else if (Starts2.IsEnd()) {
 								//	this tree will test all pairs of starts and ends
 								if (Ends2.IsEnd()) {
-									Log.Note("Waterbody Check returns negative. Took " + WBCTries + " tries and " + (WmDOT.GetTick() - tick2) + " ticks.",3);
+									Log.Note("Waterbody Check returns negative. Took " + WBCTries + " tries and " + (AIController.GetTick() - tick2) + " ticks.",3);
 									KeepTrying2 = false;
 								} else {
 									Starts2 = OldStarts2;
@@ -406,7 +406,7 @@ function OpHibernia::Run() {
 
 						if (WBCResults != null) {
 							///	Run Ship Pathfinder, and build buoys
-							tick2 = WmDOT.GetTick();
+							tick2 = AIController.GetTick();
 							local SPFResults;
 							//	Ship Pathfinder must be given a single start tile and a
 							//		single end tile
@@ -419,12 +419,12 @@ function OpHibernia::Run() {
 							Log.Note("SPFResults: " + SPFResults, 7);
 							if (SPFResults == false) {
 								//	To-Do: add a way to come back and keep trying
-								Log.Warning("        Ship Pathfinder failed to return a result. Took " + (WmDOT.GetTick() - tick2) + " ticks. Exiting Operation Hibernia...");
+								Log.Warning("        Ship Pathfinder failed to return a result. Took " + (AIController.GetTick() - tick2) + " ticks. Exiting Operation Hibernia...");
 								return;
 							}
 
 							if (SPFResults != null) {
-								Log.Note("Ship Pathfinder returns positive. Took " + (WmDOT.GetTick() - tick2) + " ticks.",3);
+								Log.Note("Ship Pathfinder returns positive. Took " + (AIController.GetTick() - tick2) + " ticks.",3);
 
 								//	Build Buoys
 								local NumberOfBuoys = this._PF.CountPathBuoys();
@@ -526,28 +526,28 @@ function OpHibernia::Run() {
 								}
 
 							} else {
-								Log.Note("Ship Pathfinder returns negative. Took " + (WmDOT.GetTick() - tick2) + " ticks.",3);
+								Log.Note("Ship Pathfinder returns negative. Took " + (AIController.GetTick() - tick2) + " ticks.",3);
 							}
 
 							KeepTrying = false;
 						} else {
-							Log.Note("Waterbody Check returns negative. Took " + (WmDOT.GetTick() - tick2) + " ticks.",3);
+							Log.Note("Waterbody Check returns negative. Took " + (AIController.GetTick() - tick2) + " ticks.",3);
 							// try another path
 							KeepTrying = true;
 						}
 					}
 				}
 			}
-		}	// end of foreach(CargoNo in MyCargos)
+		}	// end of foreach(CargoNo in MyCargoes)
 	} else {
 		Log.Warning("No Industries to work with.");
 	}
 
 //	Sleep for three months after last OpHibernia run, or a month after the last
 //		ship was added, or ignore if we have no debt
-	this._NextRun = WmDOT.GetTick() + (6500 * this._SleepLength) / 365;	//	Approx. three months
+	this._NextRun = AIController.GetTick() + (6500 * this._SleepLength) / 365;	//	Approx. three months
 
-	Log.Note("OpHibernia finished. Took " + (WmDOT.GetTick() - tick) + " ticks.", 2);
+	Log.Note("OpHibernia finished. Took " + (AIController.GetTick() - tick) + " ticks.", 2);
 
 	return;
 }
