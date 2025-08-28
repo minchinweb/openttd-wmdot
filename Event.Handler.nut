@@ -44,7 +44,6 @@ class Events {
 }
 
 class Events.Settings {
-
 	_main = null;
 
 	function _set(idx, val) {
@@ -70,7 +69,6 @@ class Events.Settings {
 }
 
 class Events.State {
-
 	_main = null;
 
 	function _get(idx) {
@@ -207,7 +205,7 @@ function Events::Run() {
 				// if Name == null, then the company has ceased to exist, and
 				// so we can't accept the merger.
 				if (Name != null) {
-					Name.find("DOT")== null
+					Name.find("DOT") == null
 					if ((Name.find("DOT") != null) || (Value < 2)) {
 						Money.FundsRequest(Value);
 						local Accepted = Event2.AcceptMerger();
@@ -234,7 +232,7 @@ function Events::Run() {
 					local OldVehicle = Event2.GetVehicleID();
 					Money.FundsRequest(AIEngine.GetPrice(AIVehicle.GetEngineType(OldVehicle)) * 1.1);
 					//	Get the depot closest to the first order of the vehicle
-					local AllDepots = AIDepotList(AIVehicle.GetVehicleType(OldVehicle));	// TODO: check this
+					local AllDepots = AIDepotList(AIVehicle.GetVehicleType(OldVehicle));	// TO-DO: check this
 					AllDepot.Valuate(GetDistanceManhattanToTile, AIOrder.GetOrderDestination(OldVehicle, 0));
 					local Depot = AllDepots.Begin();
 					local NewVehicle;

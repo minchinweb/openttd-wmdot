@@ -1,4 +1,4 @@
-﻿/*	WmDOT v.15, [2025-07-14]
+/*	WmDOT v.15, [2025-07-14]
  *	Copyright © 2011-13, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
@@ -37,7 +37,9 @@ require("Event.Handler.nut");		//	Event Handler
 require("OpFreeway.nut");			//	Freeway Builder
 
 
-class WmDOT extends AIController {
+ 
+ class WmDOT extends AIController 
+{
 	//	SETTINGS
 	WmDOTv = 15;
 	/*	Version number of AI
@@ -48,8 +50,9 @@ class WmDOT extends AIController {
 
 	SingleLetterOdds = 7;
 	/*	Control on single letter companies.  Set this value higher to increase
-	 *	the chances of a single letter DOT name (eg. 'CDOT').
-	 */
+	*	the chances of a single letter DOT name (eg. 'CDOT').
+	*/
+	SingleLetterOdds = 7;
 
 	//	END SETTINGS
 
@@ -399,7 +402,7 @@ function WmDOT::BuildWmHQ() {
 
 	// Gets a list of the towns
 	local WmTownList = AITownList();
-	//	Remove the towns with a DOT HQ and make a note of them - TODO
+	//	TODO: Remove the towns with a DOT HQ and make a note of them
 	local DotHQList = [];
 	for (local i=0; i < AICompany.COMPANY_LAST; i++) {
 		//	Test if company has built HQ
@@ -414,14 +417,15 @@ function WmDOT::BuildWmHQ() {
 	}
 
 	WmTownList.Valuate(AITown.GetPopulation);
-	local HQTown = WmTownList.Begin();
+	local HQTown = AITown();
+	HQTown = WmTownList.Begin();
 	local OriginalHQTown = HQTown;
 
 	while (Array.ContainedIn1D(DotHQList, HQTown)) {
 		Log.Note("Failed best for HQTown " + HQTown + ".",3);
 		HQTown = WmTownList.Next();
 	}
-	//	TO-DO: Doesn't address the case where all towns have a DOT HQ in them...
+	//	TODO: Doesn't address the case where all towns have a DOT HQ in them...
 
 	local Walker = MetaLib.SpiralWalker();
 	Walker.Start(AITown.GetLocation(HQTown));
@@ -438,7 +442,7 @@ function WmDOT::BuildWmHQ() {
 				Log.Note("Failed best for HQTown " + HQTown + ".",3);
 				HQTown = WmTownList.Next();
 
-				//	TO-DO: Is this check needed here, or is the check two lines down good enough?
+				//	TODO: Is this check needed here, or is the check two lines down good enough?
 				if (WmTownList.IsEnd() == true) {
 					Log.Warning("Failed to Build HQ. Returning town " + OriginalHQTown + " anyway...");
 					return OriginalHQTown;
@@ -526,18 +530,16 @@ function WmDOT::TheGreatLinkUp() {
 
 
 /*
-function TestAI::Save()
- {
-   local table = {};
-   //TODO: Add your save data to the table.
-   return table;
- }
+function TestAI::Save() {
+    local table = {};
+    //TODO: Add your save data to the table.
+    return table;
+}
 
- function TestAI::Load(version, data)
- {
-   AILog.Info(" Loaded");
-   //TODO: Add your loading routines.
- }
+function TestAI::Load(version, data) {
+    AILog.Info(" Loaded");
+    //TODO: Add your loading routines.
+}
  */
 
 //EOF

@@ -41,7 +41,7 @@ class OpMoney {
 
 		Log = OpLog;
 	}
-};
+}
 
 class OpMoney.Settings {
 
@@ -112,3 +112,5 @@ function OpMoney::GreaseMoney(Amount = 100) {
 	//	Designed to keep just enough money on-hand to keep from being sold off
 	SLMoney.MakeSureToHaveAmount(Amount);
 }
+
+// EOF

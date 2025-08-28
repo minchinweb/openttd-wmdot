@@ -35,8 +35,7 @@ class OpFreeway {
 	Money = null;
 	Pathfinder = null;
 
-	constructor()
-	{
+	constructor() {
 		this._NextRun = 13001;
 		this._RoadType = AIRoad.ROADTYPE_ROAD;
 
@@ -46,23 +45,19 @@ class OpFreeway {
 		Money = OpMoney();
 		Pathfinder = RoadPathfinder();
 	}
-
 }
 
 class OpFreeway.State {
-
 	_main = null;
 
-	function _get(idx)
-	{
+	function _get(idx) {
 		switch (idx) {
 			case "NextRun":			return this._main._NextRun; break;
 			default: throw("The index '" + idx + "' does not exist");
 		}
 	}
 
-	function _set(idx, val)
-	{
+	function _set(idx, val) {
 		switch (idx) {
 			case "NextRun":				this._main._NextRun = val; break;
 			default: throw("The index '" + idx + "' does not exist");
@@ -70,14 +65,12 @@ class OpFreeway.State {
 		return val;
 	}
 
-	constructor(main)
-	{
+	constructor(main) {
 		this._main = main;
 	}
 }
 
-function OpFreeway::LinkUp()
-{
+function OpFreeway::LinkUp() {
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
 	this.Pathfinder = WmDOT.DLS;
@@ -85,7 +78,7 @@ function OpFreeway::LinkUp()
 }
 
 function OpFreeway::AcceptPath(PathToTiles) {
-	//	TO-DO: add safety check to input here
+	//	TODO: add safety check to input here
 	this._tiles = PathToTiles;
 	return;
 }
@@ -200,7 +193,7 @@ function OpFreeway::Run() {
 						Log.Note("Connections : " + String1 + " : " + String2 + " : " + String3, 6);
 						if ((AIRoad.AreRoadTilesConnected(SquareEnd11, SquareEnd12) || AIRoad.AreRoadTilesConnected(SquareEnd13, SquareEnd14)) && (AIRoad.AreRoadTilesConnected(SquareEnd11, SquareEnd14) || AIRoad.AreRoadTilesConnected(SquareEnd12, SquareEnd13)) && (AIRoad.AreRoadTilesConnected(SquareEnd21, SquareEnd22) || AIRoad.AreRoadTilesConnected(SquareEnd23, SquareEnd24)) && (AIRoad.AreRoadTilesConnected(SquareEnd21, SquareEnd24) || AIRoad.AreRoadTilesConnected(SquareEnd22, SquareEnd23))) {
 							//	Build one way arrows
-							//	To-Do: check for exiting one-way road so we don't make the road no-entry or remove the one-way-ness
+							//	TODO: check for exiting one-way road so we don't make the road no-entry or remove the one-way-ness
 							local OneWay11;
 							local OneWay12;
 							local OneWay21;
@@ -292,3 +285,5 @@ function OpFreeway::Run() {
 	this._NextRun = AIController.GetTick() + 13001;
 	return;
 }
+
+// EOF

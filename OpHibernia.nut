@@ -26,7 +26,7 @@
 //	Requires MinchinWeb's MetaLibrary v.10
 //	Requires Zuu's SuperLib v.36
 
-//	TO-DO
+//	TODO:
 //		- if the cargo is passengers (or, I assume, mail), the receiving
 //			industries do not include towns but they probably should...
 
@@ -78,7 +78,6 @@ class OpHibernia {
 }
 
 class OpHibernia.Settings {
-
 	_main = null;
 
 	function _set(idx, val) {
@@ -124,7 +123,6 @@ class OpHibernia.Settings {
 }
 
 class OpHibernia.State {
-
 	_main = null;
 
 	function _get(idx) {
@@ -157,7 +155,6 @@ function OpHibernia::StartPathfinder() {
 }
 
 function OpHibernia::Run() {
-
 	local tick = WmDOT.GetTick();
 	Log.Note("OpHibernia running at tick " + tick + ".",1);
 
@@ -176,24 +173,24 @@ function OpHibernia::Run() {
 	Log.Note("Keep " + MyIndustries.Count() + " industries.", 2);
 
 	if (MyIndustries.Count() > 0) {
-		//	Cycle through MyIndustries and come up with the list of cargos they produce
+		//	Cycle through MyIndustries and come up with the list of cargoes they produce
 		local Produced;
-		local MyCargos = [];
+		local MyCargoes = [];
 		MyIndustries.Valuate(Helper.ItemValuator);
 		foreach (IndustryNo in MyIndustries) {
 			Produced = AICargoList_IndustryProducing(IndustryNo);
 			Produced.Valuate(Helper.ItemValuator);
-			Log.Note("Industry " + IndustryNo + " produces " + Produced.Count() + " cargos.   (" + AIIndustry.GetName(IndustryNo) + ")",4);
+			Log.Note("Industry " + IndustryNo + " produces " + Produced.Count() + " cargoes.   (" + AIIndustry.GetName(IndustryNo) + ")", 4);
 			foreach (CargoNo in Produced) {
-				if (Array.ContainedIn1D(MyCargos, CargoNo) == false) {
-					MyCargos.push(CargoNo);
+				if (Array.ContainedIn1D(MyCargoes, CargoNo) == false) {
+					MyCargoes.push(CargoNo);
 					Log.Note("Adding Cargo № " + CargoNo + " (" + AICargo.GetCargoLabel(CargoNo) + ")", 2);
 				}
 			}
 		}
 
-		foreach (CargoNo in MyCargos) {
-			//	TO-DO: Add a check here to see if we can actually transport the cargo in question!
+		foreach (CargoNo in MyCargoes) {
+			//	TODO: Add a check here to see if we can actually transport the cargo in question!
 			//				SuperLib.Engine.DoesEngineExistForCargo(cargo_id, vehicle_type = -1, no_trams = true, no_articulated = true, only_small_aircrafts = false)
 
 			///	Get a list of Oil Rigs, and add those without our ships to the sources list;
@@ -235,7 +232,7 @@ function OpHibernia::Run() {
 			this._Atlas.SetModel(this._AtlasModel);
 			this._Atlas.RunModel();
 			Log.Note("Atlas.RunModel() took " + (WmDOT.GetTick() - tick2) + " ticks.", 2);
-			//	TO-DO:	Apply maximum distance, based on ship travel speeds
+			//	TODO:	Apply maximum distance, based on ship travel speeds
 
 			local KeepTrying = true;
 			while (KeepTrying == true) {
@@ -274,10 +271,10 @@ function OpHibernia::Run() {
 							DockLocation = templist.Begin();
 						} else {
 							//	3. Build a dock
-							//	TO-DO: consider using station spread to get a spot (i.e. build a
+							//	TODO: consider using station spread to get a spot (i.e. build a
 							//				truck stop to reach the refinery)
-							//	TO-DO: wait to build the dock until we are ready to start the route
-							//	TO-DO: only build the dock (or pass on it's location) if it is in
+							//	TODO: wait to build the dock until we are ready to start the route
+							//	TODO: only build the dock (or pass on it's location) if it is in
 							//				the same waterbody as BuildPair[0]
 
 							local PossibilitiesList = Marine.GetPossibleDockTiles(MetaLib.Industry.GetIndustryID(BuildPair[1]));
@@ -382,7 +379,7 @@ function OpHibernia::Run() {
 							} while ((loops < 12) && (SPFResults == false))
 							Log.Note("SPFResults: " + SPFResults, 7);
 							if (SPFResults == false) {
-								//	To-Do: add a way to come back and keep trying
+								//	TODO: add a way to come back and keep trying
 								Log.Warning("        Ship Pathfinder failed to return a result. Took " + (WmDOT.GetTick() - tick2) + " ticks. Exiting Operation Hibernia...");
 								return;
 							}
@@ -405,14 +402,14 @@ function OpHibernia::Run() {
 								local Depot2 = Marine.BuildDepot(end, MetaLib.Extras.NextCardinalTile(BuildPair[1], BuildPair[0]));
 								Log.Note("Depots at" + Array.ToStringTiles1D([Depot1, Depot2], false, true), 4);
 
-								//	TO-DO:	Do something if neither depot could be built
-								//	TO-DO:	Build Depots in the middle if the path is extra long
+								//	TODO:	Do something if neither depot could be built
+								//	TODO:	Build Depots in the middle if the path is extra long
 								if ((Depot1 == null) && (Depot2 != null)) {
 									Depot1 = Depot2;
 								}
 
 								//	Pick an engine (ship)
-								//	TO-DO: More sophisticated engine selection; weight all the factors at once
+								//	TODO: More sophisticated engine selection; weight all the factors at once
 								local Engines = AIEngineList(AIVehicle.VT_WATER);
 								Log.Note("Start with " + Engines.Count() + " engines.", 5);
 
@@ -421,7 +418,7 @@ function OpHibernia::Run() {
 								Engines.KeepValue(true.tointeger());
 								Log.Note("Only " + Engines.Count() + " are buildable.", 5);
 
-								//	TO-DO:	Keep only engines we can afford  -  AIEngine.GetPrice(EngineID)
+								//	TODO:	Keep only engines we can afford  -  AIEngine.GetPrice(EngineID)
 
 								//	Keep only ships for this cargo
 								Engines.Valuate(AIEngine.CanRefitCargo, CargoNo);
@@ -504,13 +501,13 @@ function OpHibernia::Run() {
 					}
 				}
 			}
-		}	// end of foreach(CargoNo in MyCargos)
+		}	// end of foreach(CargoNo in MyCargoes)
 	} else {
 		Log.Warning("No Industries to work with.");
 	}
 
-//	Sleep for three months after last OpHibernia run, or a month after the last
-//		ship was added, or ignore if we have no debt
+	//	Sleep for three months after last OpHibernia run, or a month after the
+	//		last ship was added, or ignore if we have no debt
 	this._NextRun = WmDOT.GetTick() + (6500 * this._SleepLength) / 365;	//	Approx. three months
 
 	Log.Note("OpHibernia finished. Took " + (WmDOT.GetTick() - tick) + " ticks.", 2);

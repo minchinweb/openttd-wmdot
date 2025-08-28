@@ -56,7 +56,6 @@ class Route {
 }
 
 class ManShips.Settings {
-
 	_main = null;
 
 	function _set(idx, val) {
@@ -82,7 +81,6 @@ class ManShips.Settings {
 }
 
 class ManShips.State {
-
 	_main = null;
 
 	function _get(idx) {
@@ -110,7 +108,7 @@ function ManShips::LinkUp() {
 
 function ManShips::Run() {
 	Log.Note("Ship Manager running at tick " + AIController.GetTick() + ".",1);
-
+	
 	//	reset counter
 	this._NextRun = AIController.GetTick() + this._SleepLength * 17;
 
@@ -191,4 +189,5 @@ function ManShips::AddRoute (ShipID, CargoNo) {
 	this._AllRoutes.push(TempRoute);
 	Log.Note("Route added! Ship " + TempRoute._EngineID + "; " + TempRoute._Capacity + " tons of " + AICargo.GetCargoLabel(TempRoute._Cargo) + "; starting at " + TempRoute._SourceStation + "; build at " + TempRoute._Depot + "; updated at tick " + TempRoute._LastUpdate + ".", 4);
 }
+
 // EOF

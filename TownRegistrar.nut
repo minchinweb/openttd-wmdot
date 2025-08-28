@@ -57,7 +57,7 @@ class TownRegistrar {
 		this._MaxAtlasSize = 50;
 		this._NextRun = 0;
 		this._UpdateInterval = 65000;	//	6500 is about a year
-		//	TO-DO:
+		//	TODO:
 		//		- Lower this to 6500, but then _ConnectionsTN & _ConnectionsNN
 		//			need to be remapped based on _ConnectionsTT
 		this._Mode = 1;

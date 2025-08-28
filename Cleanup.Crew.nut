@@ -97,7 +97,8 @@ function OpCleanupCrew::AcceptBuiltTiles(TilePairArray) {
 	//	TODO: Add an error check on the supplied array
 
 	//	Note: Tiles are added with a random priority. This is so that they get
-	//		pulled off the map in a 'random' order, which I thought would look cool :)
+	//		pulled off the map in a 'random' order, which I thought would look
+	//		cool :)
 
 	Log.Note("Running CleanupCrew.AcceptBuildTiles...", 3);
 	for (local i = 0; i < TilePairArray.len(); i++ ) {
@@ -108,7 +109,8 @@ function OpCleanupCrew::AcceptBuiltTiles(TilePairArray) {
 
 function OpCleanupCrew::AcceptGoldenPath(TilePairArray) {
 	//	Takes in an Array of Tile Pairs that represents the 'Golden Path' or
-	//		perfect routing. Tile Pairs appearing on this list will not be un-built
+	//		perfect routing. Tile Pairs appearing on this list will not be
+	//		un-built
 	//	TODO: Add an error check on the supplied array
 
 	this._golden_path = TilePairArray;
@@ -116,7 +118,8 @@ function OpCleanupCrew::AcceptGoldenPath(TilePairArray) {
 }
 
 function OpCleanupCrew::SetToRun() {
-	//	Involved OpDOT to have Cleanup Crew run on the next pass in the main loop
+	//	Involved OpDOT to have Cleanup Crew run on the next pass in the main
+	//		loop
 
 	//	Note:	This is set to run at the current moment (tick). However, the
 	//			main loop compares run times to the time when the loop started.
@@ -159,7 +162,7 @@ function OpCleanupCrew::Run() {
 				i++;
 				Log.Note(i +". Testpair at " + Array.ToStringTiles1D(TestPair) + " removed.", 4);
 			} else {
-			// we're either a tunnel or a bridge, remove both!
+				// we're either a tunnel or a bridge, remove both!
 				i++;
 				Log.Note(i +". Testpair at " + Array.ToStringTiles1D(TestPair) + " removed. (Bridge or Tunnel)", 4);
 				Money.GreaseMoney((AIRoad.GetBuildCost(this._road_type, AIRoad.BT_ROAD) * AIMap.DistanceManhattan(TestPair[0], TestPair[1]) * 2) );

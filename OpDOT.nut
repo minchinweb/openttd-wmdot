@@ -29,7 +29,7 @@
 //	Requires "TownRegistrar.nut"
 //	Requires "Cleanup.Crew.nut"
 
-//	TO-DO
+//	TODO
 //	- break into more steps (Modes) to allow breaking during pathfinding
 
 /*	AILog.Info("OpDOT settings: " + MyDOT.Settings.PrintTownAtlas + " " + MyDOT.Settings.MaxAtlasSize + " " + MyDOT.Settings.FloatOffset);
@@ -89,8 +89,7 @@ class OpDOT {
 	Pathfinder = null;
 
 
-	constructor()
-	{
+	constructor() {
 		this._SleepLength = 50;
 		this._FloatOffset = 0.001;
 		this._PathFinderCycles = 100;
@@ -236,8 +235,8 @@ function OpDOT::Run() {
 		case 6:
 			if (this._ModeStart == true) {
 				if (this._Mode == 2 && this.Towns.Settings.PopLimit == 0) {
-				//	This should only run after moving out of Mode 1 for the
-				//		first time
+					//	This should only run after moving out of Mode 1 for the
+					//		first time
 					this.Towns.UpdateMode(1);	//	Abide by PopLimit setting
 					this.Towns.Run();			//	Regenerate Neighbourhoods
 				}
@@ -265,30 +264,30 @@ function OpDOT::Run() {
 
 			//	If everything is connected, bump it up to 'Mode 2' or 3
 			if (this._PairsToConnect == null) {
-			//	No pairs left to connect in this mode
+				//	No pairs left to connect in this mode
 				if (this._BuiltSomething == false) {
-				//	If nothing has been built, move to next mode; if
-				//		something has been built (in Modes 3, 4, 5),
-				//		rebuild atlas and try again
+					//	If nothing has been built, move to next mode; if
+					//		something has been built (in Modes 3, 4, 5),
+					//		rebuild atlas and try again
 					this._Mode++;
 					Log.Note("** Moving to Mode " + this._Mode + ". **",2);
 				} else {
-				//	That is to say, something has been built...
+					//	That is to say, something has been built...
 					if (this._Mode <= 2) {
-					//	If we're in Mode 1 or 2, we don't care; bump
-					//		up the level (all possible connections are
-					//		maintained in the given Atlas)
+						//	If we're in Mode 1 or 2, we don't care; bump
+						//		up the level (all possible connections are
+						//		maintained in the given Atlas)
 						this._Mode++;
 						Log.Note("** Moving to Mode " + this._Mode + ". **",2);
 					} else if (this._Mode == 6) {
-					//	if something has been built (in Modes 6), rebuild atlas
-					//		 and try again
+						//	if something has been built (in Modes 6), rebuild atlas
+						//		 and try again
 						Log.Note("** Restarting in Mode " + this._Mode + ". **",2);
 					} else {
-					//	If we're in Mode 3 or higher, have built a
-					//		connection might open up new possibilities;
-					//		restart in Mode 3 and rebuild the Atlas
-					//		(i.e. restart the Mode)
+						//	If we're in Mode 3 or higher, have built a
+						//		connection might open up new possibilities;
+						//		restart in Mode 3 and rebuild the Atlas
+						//		(i.e. restart the Mode)
 						this._Mode = 3;
 						Log.Note("** Restarting in Mode " + this._Mode + ". **",2);
 					}
@@ -302,7 +301,7 @@ function OpDOT::Run() {
 					TestAtlas = RemoveExistingConnections(TestAtlas);
 				}
 
-				// if ((this._Mode == 6) || (TestAtlas[0][2] == 1) ) {
+				//if ((this._Mode == 6) || (TestAtlas[0][2] == 1) ) {
 				if (TestAtlas[0][2] == 1) {
 					local tick = AIController.GetTick();
 					local KeepTrying = true;
@@ -322,7 +321,7 @@ function OpDOT::Run() {
 						Log.Note("Cost of path is " + BuildCost + "£. Took " + (AIController.GetTick() - tick) + " ticks.", 3);
 						Money.FundsRequest(BuildCost*1.1);		//	To allow for inflation during construction
 						this.Pathfinder.BuildPath();
-						// AILog.Info(Array.ToString2D(this.Pathfinder.PathToTilePairs()));
+						//AILog.Info(Array.ToString2D(this.Pathfinder.PathToTilePairs()));
 
 						//	Test to see if construction worked by running the
 						//		pathfinder and computing build cost of the
@@ -331,7 +330,7 @@ function OpDOT::Run() {
 						Log.Note("Attempt " + Tries + " to connect " +AITown.GetName(this._PairsToConnect[0]) + " to " + AITown.GetName(this._PairsToConnect[1]) + ".", 3)
 						this.Pathfinder = RunPathfinderOnTownPairs(this._PairsToConnect);
 						BuildCost = this.Pathfinder.GetBuildCost();
-						// TO-DO:	Check that the bridges and tunnels got
+						// TODO:	Check that the bridges and tunnels got
 						//			built; if unbuildable, their cost remains 0£
 
 						if (BuildCost == 0) {
@@ -393,14 +392,14 @@ function OpDOT::Run() {
 			break;
 	}
 
-	//	Used as a baseline for the next time around to see if any towns have
-	//	been added to the list
+	// Used as a baseline for the next time around to see if any towns have
+	// been added to the list
 	this._NumOfTownsOnList = this._TownArray.len();
 }
 
 function OpDOT::GenerateTownList(SetPopLimit = -1) {
-	//	'SetPopLimit' allows overriding of the AI setting for the minimum size
-	//	    of towns to consider
+	//	'SetPopLimit' allows overriding of the AI setting for the minimum size of
+	//		towns to consider
 
 	Log.Note("Generating Atlas...", 2);
 	// Generate TownList
@@ -412,7 +411,8 @@ function OpDOT::GenerateTownList(SetPopLimit = -1) {
 	} else {
 		PopLimit = SetPopLimit;
 	}
-	WmTownList.KeepAboveValue(PopLimit);				// cuts under the pop limit
+	// cuts under the pop limit
+	WmTownList.KeepAboveValue(PopLimit);
 	Log.Note("     Ignoring towns with population under " + PopLimit + ". " + WmTownList.Count() + " of " + AITown.GetTownCount() + " towns left.",2);
 
 	local WmTownArray = [];
@@ -422,7 +422,7 @@ function OpDOT::GenerateTownList(SetPopLimit = -1) {
 		WmTownArray[i]=iTown;
 		iTown = WmTownList.Next();
 	}
-
+	
 
 	return WmTownArray;
 }
@@ -496,8 +496,8 @@ function OpDOT::RemoveExclusiveDepart(WmAtlas, HQTown, ConnectedPairs, Mode) {
 			for (local i = 0; i < WmAtlas.len(); i++ ) {
 				if (WmAtlas[i][0] != HQTown) {
 					for (local j=1; j < WmAtlas[i].len(); j++ ) {
+						//	Avoid already zeroed entries
 						if (WmAtlas[i][j] != 0) {
-							//	Avoid already zeroed entries
 							WmAtlas[i][j] = 0;
 							Count++;
 						}
@@ -517,8 +517,8 @@ function OpDOT::RemoveExclusiveDepart(WmAtlas, HQTown, ConnectedPairs, Mode) {
 			for (local i = 0; i < WmAtlas.len(); i++ ) {
 				if (!Array.ContainedIn2D(ConnectedPairs, WmAtlas[i][0])) {
 					for (local j=1; j < WmAtlas[i].len(); j++ ) {
+						//	Avoid already zeroed entries
 						if (WmAtlas[i][j] != 0) {
-							//	Avoid already zeroed entries
 							WmAtlas[i][j] = 0;
 							Count++;
 						}
@@ -576,7 +576,7 @@ function OpDOT::RemoveBuiltConnections(WmAtlas, ConnectedPairs) {
 
 function OpDOT::RemoveOverDistance(WmAtlas, MaxDistance)
 {
-	//	Zeros out distances in the Atlas over an predefined distances
+	//	Zeros out distances in the Atlas over an predefined distancez
 	//	You don't really want to drive all the way across the map, do you?
 
 	Log.Note("Removing towns further than " + MaxDistance + " tiles apart...", 2)
@@ -787,17 +787,18 @@ function OpDOT::GetSpeed() {
 		// Backup if there's no buses in the game...
 		Log.Warning("No Busses in game. Reverted to backup for GetSpeed().");
 
-		local GameYearCase = 4;		// Convert to case numbers here because
-									//		Squirrel's switch statement doesn't
-									//		seem to play nice with inline evaluations
+		// Convert to case numbers here because Squirrel's switch statement
+		// doesn't seem to play nice with inline evaluations
+		local GameYearCase = 4;
 		if (GameYear < 2008) {
 			GameYearCase = 3;
 		}
 		if (GameYear < 1986) {
 			GameYearCase = 2;
 		}
-		if (GameYear < 1964)
+		if (GameYear < 1964) {
 			GameYearCase = 1;
+		}
 
 
 		switch (GameYearCase)
@@ -851,9 +852,9 @@ function OpDOT::MirrorAtlas(WmAtlas) {
 
 	for (local i=0; i < WmAtlas.len(); i++) {
 		for (local j=1; j < WmAtlas[0].len(); j++) {
+			// This avoids zero entries to save on processing capacity, but
+			// also to avoid erasing the whole array!!
 			if (WmAtlas[i][j] != 0) {
-				//	This avoids zero entries to save on processing capacity,
-				//	but also to avoid erasing the whole array!!
 				WmAtlas[j-1][i+1] = WmAtlas[i][j];
 			}
 		}
@@ -902,7 +903,7 @@ function OpDOT::RunPathfinderOnTowns(TownA, TownB) {
 	//	- add check that the center of town is indeed a road tile
 
 	Log.Note("Connecting " + AITown.GetName(TownA) + " and " + AITown.GetName(TownB) + "...", 2);
-	return RunPathfinder(AITown.GetLocation(TownA),AITown.GetLocation(TownB));
+	return RunPathfinder(AITown.GetLocation(TownA), AITown.GetLocation(TownB));
 }
 
 function OpDOT::RunPathfinderOnTownPairs(ConnectPairs) {
@@ -911,7 +912,7 @@ function OpDOT::RunPathfinderOnTownPairs(ConnectPairs) {
 }
 
 function OpDOT::LengthOfExistingConnections(TileA, TileB) {
-	Log.Note("Checking existing Connection.",3)
+	Log.Note("Checking existing Connection.", 3)
 
 	local tick;
 	tick = AIController.GetTick();
@@ -925,7 +926,7 @@ function OpDOT::LengthOfExistingConnections(TileA, TileB) {
 	while (path == false) {
 		path = pathfinder.FindPath(this._PathFinderCycles);
 		// AIController.Sleep(1);
-		CycleCounter+=this._PathFinderCycles;
+		CycleCounter += this._PathFinderCycles;
 		if ((CycleCounter % 2000 < this._PathFinderCycles) || (this._PathFinderCycles > 2000)) {
 			//	A safety to make sure that the AI doesn't run out
 			//		of money while pathfinding...
@@ -947,12 +948,12 @@ function OpDOT::LengthOfExistingConnections(TileA, TileB) {
 function OpDOT::LengthOfExistingConnectionsOnTowns(TownA, TownB) {
 	//	Runs the pathfinder between the given towns, but just checks for the
 	//	length of the existing connection
-	// TO-DO:
+	// TODO:
 	//	- add check that the center of town is indeed a road tile
 
 	Log.Note("Checking connection length between " + AITown.GetName(TownA) + " and " + AITown.GetName(TownB) + "...", 2);
 
-	return LengthOfExistingConnections(AITown.GetLocation(TownA),AITown.GetLocation(TownB));
+	return LengthOfExistingConnections(AITown.GetLocation(TownA), AITown.GetLocation(TownB));
 }
 
 function OpDOT::LengthOfExistingConnectionsOnTownPairs(ConnectPairs) {
@@ -961,3 +962,5 @@ function OpDOT::LengthOfExistingConnectionsOnTownPairs(ConnectPairs) {
 }
 
 /* ===== END OF PATHFINDER FUNCTIONS ====== */
+
+// EOF

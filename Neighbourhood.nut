@@ -31,8 +31,7 @@ class Neighbourhood {
 	_Info = null;
 	Log = null;
 
-	constructor ()
-	{
+	constructor () {
 		this._size = 0;
 		this._townlist = [];
 		this._FloatOffset = 0.001;
@@ -41,8 +40,7 @@ class Neighbourhood {
 		this.Log = WmDOT.Log;
 	}
 
-	constructor (Index, Towns)
-	{
+	constructor (Index, Towns) {
 		this._index = Index;
 		this._townlist = Towns;
 		this._size = this._townlist.len();
@@ -67,9 +65,8 @@ class Neighbourhood {
 	return this._size;
 } */
 
-function Neighbourhood::SplitNeighbourhood()
-{
-	//	Spliting the Neighbourhood takes the exisitng neighbourhood, finds the
+function Neighbourhood::SplitNeighbourhood() {
+	//	Spliting the Neighbourhood takes the existing neighbourhood, finds the
 	//		two biggest towns, and then creates two neighbourhoods by spliting
 	//		the old neighbourhood by drawing a line between the two capitals
 	//	Returns 2 element array, containing to arrays of the town ID's that
@@ -117,13 +114,12 @@ function Neighbourhood::SplitNeighbourhood()
 	Log.Note("NB is: " + Array.ToString1D(NB), 4);
 
 
-	return [NA,NB];
+	return [NA, NB];
 }
 
-function Neighbourhood::GetHighestPopulation(IgnoreList = [-1])
-{
-//	Returns the town with the highest population
-//	TownID's on the Ignore list will not be returned
+function Neighbourhood::GetHighestPopulation(IgnoreList = [-1]) {
+	//	Returns the town with the highest population
+	//	TownID's on the Ignore list will not be returned
 	local HighPop = 0;
 	local KeepIndex = -1;
 
@@ -137,15 +133,14 @@ function Neighbourhood::GetHighestPopulation(IgnoreList = [-1])
 	return KeepIndex;
 }
 
-function Neighbourhood::UpdateTownList(NewTowns)
-{
-//	Bulk updates the town list (this completely replaces it! use with caution)
+function Neighbourhood::UpdateTownList(NewTowns) {
+	//	Bulk updates the town list (this completely replaces it! use with
+	//		caution)
 	this._townlist = NewTowns;
 	this._size = this._townlist.len();
 }
 
-function MapTownsToNeighbourhoods(WorldSize, ListOfNeighbourhoods)
-{
+function MapTownsToNeighbourhoods(WorldSize, ListOfNeighbourhoods) {
 	//	Returns an array where the index corresponds to the townID and the
 	//		value at that index corresponds to the Neighbourhood it's in
 	local LookUpList = [];
@@ -165,11 +160,10 @@ function MapTownsToNeighbourhoods(WorldSize, ListOfNeighbourhoods)
 	return LookUpList;
 }
 
-function Neighbourhood::MarkOut()
-{
-//	When called, posts signs at the town centre of each town in the
-//		neighbourhood with the neighbourhood's index number. The capital is
-//		noted with stars **
+function Neighbourhood::MarkOut() {
+	//	When called, posts signs at the town centre of each town in the
+	//		neighbourhood with the neighbourhood's index number. The capital is
+	//		noted with stars **
 
 	//	Now place
 	Log.Sign(AITown.GetLocation(this._townlist[0]), "** " + this._index + " **", 5);
@@ -177,3 +171,5 @@ function Neighbourhood::MarkOut()
 			Log.Sign(AITown.GetLocation(this._townlist[i]), this._index, 7);
 		}
 }
+
+// EOF
