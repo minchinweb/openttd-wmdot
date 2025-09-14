@@ -503,7 +503,7 @@ function OpHibernia::Run() {
 			}
 		}	// end of foreach(CargoNo in MyCargoes)
 	} else {
-		Log.Warning("No Industries to work with.");
+		Log.Warning("  No Industries for Operation Hibernia to work with.");
 	}
 
 	//	Sleep for three months after last OpHibernia run, or a month after the
