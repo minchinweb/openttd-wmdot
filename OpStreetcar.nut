@@ -1,4 +1,4 @@
-/*	Operation Streetcar v.1, [2013-01-22],
+﻿/*	Operation Streetcar v.1, [2013-01-22],
  *		part of WmDOT v.12.1
  *	Copyright © 2012-13 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
@@ -369,7 +369,7 @@ function OpStreetcar::AddRoutes(StationsTiles) {
 
 		local station_1 = AIStation.GetStationID(station_1_tile);
 		local station_2 = AIStation.GetStationID(station_2_tile);
-		
+
 		Log.Note("Stations № " + station_1 + " and " + station_2, 6);
 		this.RouteManager.AddRoute(station_1, station_2, this._PaxCargo, this.Pathfinder);
 

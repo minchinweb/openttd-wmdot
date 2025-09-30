@@ -1,4 +1,4 @@
-/*	Event Handler v.1.1, [2025-07-14]
+﻿/*	Event Handler v.1.1, [2025-07-14]
  *		part of WmDOT v.11
  *	Copyright © 2012, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot

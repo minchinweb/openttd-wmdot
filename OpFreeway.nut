@@ -1,4 +1,4 @@
-/*	Operation Freeway v.2, [2025-07-12],
+﻿/*	Operation Freeway v.2, [2025-07-12],
  *		part of WmDOT v.15
  *	Copyright © 2012-13, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot

@@ -1,4 +1,4 @@
-/*	WmDOT v.15, [2025-09-30]
+﻿/*	WmDOT v.15, [2025-09-30]
  *	Copyright © 2011-13, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
