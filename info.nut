@@ -1,4 +1,4 @@
-/*	WmDOT v.15, [2025-07-14]
+/*	WmDOT v.15, [2025-09-30]
  *	Copyright © 2011-16, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *		OR  http://www.tt-forums.net/viewtopic.php?f=65&t=53698
@@ -21,7 +21,7 @@ class WmDOT extends AIInfo
 	function GetDescription()   { return "An AI that doesn't compete with you but rather builds out the highway network. It makes a little money transporting offshore oil and running public transit. v.15.1 (r.250715)"; }
 	function GetVersion()       { return 15; }
 	function MinVersionToLoad() { return 1; }
-	function GetDate()          { return "2025-07-14"; }
+	function GetDate()          { return "2025-09-30"; }
 	function GetShortName()     { return "}}mW"; }	//	0x576D7D7D
 	function CreateInstance()   { return "WmDOT"; }
 	function GetAPIVersion()    { return "1.11"; }
@@ -52,7 +52,7 @@ class WmDOT extends AIInfo
 //		AddSetting({name = "Hwy_Prefix", description = "Highway Prefix", min_value = 0, max_value = 4, easy_value = 0, medium_value = 0, hard_value = 0, custom_value = 0, flags = 0});
 //		AddLabels("Hwy_Prefix", {_0 = "Match DOT name", _1 = "Hwy", _2 = "I-", _3 = "US", _4 = "RN"});
 
-		AddSetting({name = "OpStreetcar", description = "--  Operation Streetcar  --  is ", easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1, flags = CONFIG_BOOLEAN});
+		AddSetting({name = "OpStreetcar", description = "--  Operation Streetcar  --  is ", easy_value = 0, medium_value = 0, hard_value = 0, custom_value = 0, flags = CONFIG_BOOLEAN});
 
 		AddSetting({name = "info0", description = "-------------------------------------------------------------------- ", min_value = 0, max_value = 1, easy_value = 0, medium_value = 0, hard_value = 0, custom_value = 0, flags = 0});
 		AddLabels("info0", {_0 = "", _1 = ""});
@@ -68,5 +68,5 @@ RegisterAI(WmDOT());
 
 //	Requires:
 //		Zuu's SuperLib, v.40
-//		MinchinWeb's MetaLib, v.10
+//		MinchinWeb's MetaLib, v.11
 //		Queue.Fibonacci_Heap v.3  (for Cleanup Crew)

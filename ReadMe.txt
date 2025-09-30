@@ -1,5 +1,5 @@
 ﻿WmDOT Read-me
-v.15, 2025-07-14
+v.15, 2025-09-30
 Copyright © 2011-16, 2025 by W. Minchin. For more info, please visit
     https://github.com/MinchinWeb/openttd-wmdot  or
     http://www.tt-forums.net/viewtopic.php?f=65&t=53698
@@ -29,8 +29,8 @@ WmDOT starts by selecting a 'capital' and builds its Headquarters there.
 WmDOT requires OpenTTD version 1.2 or newer. This is available as a free
     download from OpenTTD.org
 As dependencies, WmDOT also requires:
-    - MinchinWeb's MetaLibrary, v.9
-    - SuperLib, v.39
+    - MinchinWeb's MetaLibrary, v.11
+    - SuperLib, v.40
     - Binary Heap, v.1 ('Queue.BinaryHeap-1.tar')
 
 == Installation ==========================================================
@@ -86,18 +86,24 @@ Build Freeways: On/Off
       between cities
 Operation Hibernia: On/Off
     - whether Operation Hibernia runs or not. Operation Hibernia
-      transports oil from Oil Rigs to Oil Refineries to earn WmDOT a
-      little bit of money.
+      transports oil from Oil Rigs to Oil Refineries (and other similar
+      water-based industries) to earn WmDOT a little bit of money.
+Operation Streetcar: On/Off
+    - whether Operation Streetcar runs or not. Operation Streetcar builds
+      streetcars through the "Headquarters Town" as an additional way to earn
+      WmDOT a little bit of money. Currently experiemental and disabled by
+      default.
 
 == Version History =======================================================
-Version 15 [2025-07-14]
+Version 15 [2025-09-30]
     (Attempt to) fix crash where the Ship Pathfinder returned `null` for buoy
         count (see Issue #15 and #17).
     Fix logging crash in OpHibernia if one of the depots was unbuilt
         (see Issue #18).
     Fix the Freeway builder so it is consistently right-handed (see Issue #10).
     Fix a crash if the HQ Town had too small a population.
-    Updated to MetaLibrary v10 and SuperLib v40
+    Initial, experimental implementation of OpStreetcar.
+    Updated to MetaLibrary v11 and SuperLib v40
 
 See the attached CHANGELOG.txt for full version history.
 
@@ -105,11 +111,11 @@ See the attached CHANGELOG.txt for full version history.
 These are features I hope to add to WmDOT shortly. However, this is
     subject to change without notice. However, I am open to suggestions!
 
-v15 Ship Pathfinder improvements
 v16 Provide streetcar service in towns
 v17 Provide inter-city valuables transportation
 v18 Bring water and food to towns in the desert and above the snowline to
         help them grow
+v19 Ship Pathfinder improvements
 
 == Known Issues ==========================================================
 NewGRF support (beyond FIRS and FISH) has not been tested.
@@ -135,8 +141,8 @@ Pathfinding can take an exceptionally long time if there is no possible
 Cleanup Crew does funny things...
 
 WmDOT will add ships, but does not currently remove them. Therefore, if
-    industry production drops, there could be a number of ships waiting
-    for fill-ups and driving WmDOT to bankruptcy.
+    industry production drops or the industry closes, there could be a number
+    of ships waiting for fill-ups and driving WmDOT to bankruptcy.
 
 == Help! It broke! (Bug Report) ==========================================
 If WmDOT crashes, please help me fix it! Save a screenshot (under the ? on

@@ -1,5 +1,5 @@
 WmDOT License
-v.15, 2025-07-14
+v.15, 2025-09-30
 Copyright © 2011-16, 2025 by W. Minchin. For more info, please visit
     https://github.com/MinchinWeb/openttd-wmdot  or
     http://www.tt-forums.net/viewtopic.php?f=65&t=53698
