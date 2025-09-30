@@ -180,7 +180,7 @@ class OpDOT.State {
 
 	function _set(idx, val) {
 		switch (idx) {
-			case "NextRun":				this._main._NextRun = val; break;
+			case "NextRun":			this._main._NextRun = val; break;
 			default: throw("The index '" + idx + "' does not exist");
 		}
 		return val;
@@ -199,7 +199,7 @@ function OpDOT::LinkUp() {
 	this.Freeways = WmDOT.Freeways;
 	this.Pathfinder = WmDOT.DLS;
 
-	Log.Note(this.GetName() + " linked up!",3);
+	Log.Note(this.GetName() + " linked up!", 3);
 }
 
 function OpDOT::Run() {
@@ -218,11 +218,11 @@ function OpDOT::Run() {
 	//		7 - the AI naps ... zzz ...
 
 	this._NextRun = AIController.GetTick();
-	Log.Note("OpDOT running in Mode " + this._Mode + " at tick " + this._NextRun + ".",1);
+	Log.Note("OpDOT running in Mode " + this._Mode + " at tick " + this._NextRun + ".", 1);
 
 	if ((WmDOT.GetSetting("OpDOT") != 1) || (AIGameSettings.IsDisabledVehicleType(AIVehicle.VT_ROAD) == true)) {
 		this._NextRun = AIController.GetTick() + 13001;			//	6500 ticks is about a year
-		Log.Note("** OpDOT has been disabled. **",0);
+		Log.Note("** OpDOT has been disabled. **", 0);
 		return;
 	}
 

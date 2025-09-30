@@ -16,6 +16,7 @@
 import("util.MinchinWeb", "MetaLib", 10);
 	RoadPathfinder <- MetaLib.DLS;
 	ExistingRoadPathfinder <- MetaLib.RoadPathfinder;
+	StreetcarPathfinder <- MetaLib.RoadPathfinder;
 	Array <- MetaLib.Array;
 	Atlas <- MetaLib.Atlas;
 	Marine <- MetaLib.Marine;
@@ -25,7 +26,7 @@ import("util.superlib", "SuperLib", 40);		//	For loan management
 	Helper <- SuperLib.Helper;
 	Direction <- SuperLib.Direction;
 
-require("OpDOT.nut");				//	OperationDOT
+require("OpDOT.nut");				//	Operation Department of Transportation (DOT)
 require("OpMoney.nut");				//	Operation Money
 require("TownRegistrar.nut");		//	Town Registrar
 require("Neighbourhood.nut");		//	Neighbourhood Class
@@ -35,16 +36,18 @@ require("OpHibernia.nut");			//	Operation Hibernia
 require("Ship.Manager.nut");		//	Ship Manager
 require("Event.Handler.nut");		//	Event Handler
 require("OpFreeway.nut");			//	Freeway Builder
+require("OpStreetcar.nut");			//	Operation Streetcar
+require("Streetcar.Manager.nut");	//	Streetcar (Route) Manager
 
 
  
  class WmDOT extends AIController 
 {
 	//	SETTINGS
-	WmDOTv = 15;
+	WmDOTv = 15.1;
 	/*	Version number of AI
 	 */
-	WmDOTr = 250714;
+	WmDOTr = 250715;
 	/*	Reversion number of AI
 	 */
 
@@ -66,6 +69,8 @@ require("OpFreeway.nut");			//	Freeway Builder
 	Event = Events();
 	Freeways = OpFreeway();
 	DLS = RoadPathfinder();
+	StreetCars = OpStreetcar();
+	Manager_Streetcars = ManStreetcars();
 
 	function Start();
 }
@@ -76,6 +81,7 @@ require("OpFreeway.nut");			//	Freeway Builder
 
 function WmDOT::Start() {
 	//	For debugging crashes...
+	local Debug_3 = "/*           OpStreetcar: " + GetSetting("OpStreetcar") + " */";
 	local Debug_2 = "/* Settings: " + GetSetting("DOT_name1") + "-" + GetSetting("DOT_name2") + " - dl" + GetSetting("Debug_Level") + " // OpDOT: " + GetSetting("OpDOT") + " - " + GetSetting("OpDOT_MinTownSize") + " - " + GetSetting("TownRegistrar_AtlasSize") + " - " + GetSetting("OpDOT_RebuildAttempts") + " - " + GetSetting("Freeways") + " // OpHibernia: " + GetSetting("OpHibernia") + " */" ;
 	local Debug_1 = "/* v." + WmDOTv + ", r." + WmDOTr + " // r." + MetaLib.Extras.GetOpenTTDRevision() + " // " + AIDate.GetYear(AIDate.GetCurrentDate()) + "-" + AIDate.GetMonth(AIDate.GetCurrentDate()) + "-" + AIDate.GetDayOfMonth(AIDate.GetCurrentDate()) + " start // " + AIMap.GetMapSizeX() + "x" + AIMap.GetMapSizeY() + " map - " + AITown.GetTownCount() + " towns */";
 
@@ -98,6 +104,8 @@ function WmDOT::Start() {
 	Log.Note("     " + Manager_Ships.GetName() + ", v." + Manager_Ships.GetVersion() + " r." + Manager_Ships.GetRevision() + "  loaded!", 0);
 	Log.Note("     " + Event.GetName() + ", v." + Event.GetVersion() + " r." + Event.GetRevision() + "  loaded!", 0);
 	Log.Note("     " + Freeways.GetName() + ", v." + Freeways.GetVersion() + " r." + Freeways.GetRevision() + "  loaded!", 0);
+	Log.Note("     " + StreetCars.GetName() + ", v." + StreetCars.GetVersion() + " r." + StreetCars.GetRevision() + "  loaded!", 0);
+	Log.Note("     " + Manager_Streetcars.GetName() + ", v." + Manager_Streetcars.GetVersion() + " r." + Manager_Streetcars.GetRevision() + "  loaded!", 0);
 	StartInfo();		//	AyStarInfo()
 						//	RoadPathfinder()
 						//	NeighbourhoodInfo()
@@ -119,21 +127,23 @@ function WmDOT::Start() {
 	local Time;
 
 	DOT.Settings.HQTown = HQTown;
-
-	ColourWmDOT();
+	StreetCars.Settings.StartTile = AITown.GetLocation(HQTown);
 
 	while (true) {
 		Time = this.GetTick();
 //		Log.UpdateDebugLevel();
 
-		if (Time > Money.State.NextRun)			{ Money.Run(); }
-		if (Time > Towns.State.NextRun)			{ Towns.Run(); }
-		if (Time > CleanupCrew.State.NextRun)	{ CleanupCrew.Run(); }
-		if (Time > DOT.State.NextRun)			{ DOT.Run(); }
-		if (Time > Freeways.State.NextRun)		{ Freeways.Run(); }
-		if (Time > Hibernia.State.NextRun)		{ Hibernia.Run(); }
-		if (Time > Manager_Ships.State.NextRun)	{ Manager_Ships.Run(); }
-		if (Time > Event.State.NextRun)			{ Event.Run(); }
+		if (Time > Money.State.NextRun)					{ Money.Run(); }
+		if (Time > Towns.State.NextRun)					{ Towns.Run(); }
+		if (Time > CleanupCrew.State.NextRun)			{ CleanupCrew.Run(); }
+		if (Time > DOT.State.NextRun)					{ DOT.Run(); }
+		if (Time > Freeways.State.NextRun)				{ Freeways.Run(); }
+		if (Time > StreetCars.State.NextRun)			{ StreetCars.Run(); }
+		if (Time > Hibernia.State.NextRun)				{ Hibernia.Run(); }
+		// if (Time > Manager_Ships.State.NextRun)			{ Manager_Ships.RunEngineCheck(); }
+		if (Time > Manager_Ships.State.NextRun)			{ Manager_Ships.Run(); }
+		if (Time > Manager_Streetcars.State.NextRun)	{ Manager_Streetcars.Run(); }
+		if (Time > Event.State.NextRun)					{ Event.Run(); }
 
 		this.Sleep(1);
 	}
@@ -496,7 +506,7 @@ function WmDOT::TileIsWhatTown(TileIn) {
 
 	for (local i = 0; i < AITown.GetTownCount(); i++) {
 		TestValue = AITown.IsWithinTownInfluence(i, TileIn);
-//		AILog.Info("          " + i + ". Testing Town " + " and returns " + TestValue);
+		// AILog.Info("          " + i + ". Testing Town " + " and returns " + TestValue);
 		if (TestValue == true) {
 			return i;
 		}
@@ -523,7 +533,11 @@ function WmDOT::TheGreatLinkUp() {
 	Manager_Ships.LinkUp();
 	Event.LinkUp();
 	Freeways.LinkUp();
+	StreetCars.LinkUp();
+	Manager_Streetcars.LinkUp();
+
 	Hibernia.StartPathfinder();
+
 	Log.Note("The Great Link Up is Complete!", 1);
 	Log.Note("", 1);
 }

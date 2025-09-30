@@ -19,7 +19,7 @@
 
 class Events {
 	function GetVersion()       { return 1; }
-	function GetRevision()		{ return 20250714; }
+	function GetRevision()		{ return 250714; }
 	function GetDate()          { return "2025-07-14"; }
 	function GetName()          { return "Event Handler"; }
 
@@ -30,6 +30,7 @@ class Events {
 	Log = null;
 	Money = null;
 	Manager_Ships = null;
+	Manager_Streetcar = null;
 
 	constructor() {
 		this._NextRun = 0;
@@ -40,6 +41,7 @@ class Events {
 		Log = OpLog();
 		Money = OpMoney();
 		Manager_Ships = ManShips();
+		Manager_Streetcar = ManStreetcars()
 	}
 }
 
@@ -87,6 +89,7 @@ function Events::LinkUp() {
 	this.Log = WmDOT.Log;
 	this.Money = WmDOT.Money;
 	this.Manager_Ships = WmDOT.Manager_Ships;
+	this.Manager_Streetcar = WmDOT.Manager_Streetcars;
 
 	Log.Note(this.GetName() + " linked up!",3);
 }
@@ -172,28 +175,28 @@ function Events::Run() {
 
 			case AIEvent.ET_EXCLUSIVE_TRANSPORT_RIGHTS:
 				Log.Note("Ignoring purchase of exclusive (town) transportation rights.", 4);
-				break
+				break;
 			case AIEvent.ET_ROAD_RECONSTRUCTION:
 				Log.Note("Ignoring road reconstruction.", 4);
-				break
+				break;
 			case AIEvent.ET_VEHICLE_AUTOREPLACED :
 				Log.Note("Ignoring vehicle autoreplacement.", 4);
-				break
+				break;
 			case AIEvent.ET_STORYPAGE_BUTTON_CLICK:
 				Log.Note("Ignoring StoryPage button clicked.", 4);
-				break
+				break;
 			case AIEvent.ET_STORYPAGE_TILE_SELECT:
 				Log.Note("Ignoring StoryPage tile selected.", 4);
-				break
+				break;
 			case AIEvent.ET_STORYPAGE_VEHICLE_SELECT:
 				Log.Note("Ignoring StoryPage vehicle selected.", 4);
-				break
+				break;
 			case AIEvent.ET_COMPANY_RENAMED:
 				Log.Note("Ignoring company renamed.", 4);
-				break
+				break;
 			case AIEvent.ET_PRESIDENT_RENAMED:
 				Log.Note("Ignoring (company) president renamed.", 4);
-				break
+				break;
 
 			case AIEvent.ET_COMPANY_ASK_MERGER:
 				// Accept the merger is the company is a 'DOT' or the value is $2
@@ -248,7 +251,7 @@ function Events::Run() {
 				local Event2 = AIEventVehicleWaitingInDepot.Convert(Event);
 				local Vehicle = Event2.GetVehicleID();
 				local Result = AIVehicle.SellVehicle(Vehicle);
-				Log.Note("Vehicle " + Vehicle + " sold! : " + Result, 4);
+				Log.Note("Vehicle №" + Vehicle + " sold! : " + Result, 4);
 				break;
 
 			case AIEvent.ET_ENGINE_PREVIEW:
