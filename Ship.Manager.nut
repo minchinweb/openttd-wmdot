@@ -1,6 +1,6 @@
 ﻿/*	Ship Manager v.3, [2025-07-14]
  *		part of WmDOT v.15
- *	Copyright © 2012 by W. Minchin. For more info,
+ *	Copyright © 2012, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
  *	Permission is granted to you to use, copy, modify, merge, publish,
@@ -18,9 +18,8 @@
  */
 
 class ManShips {
-	function GetVersion()       { return 3; }
-	function GetRevision()		{ return 250714; }
-	function GetDate()          { return "2025-07-14"; }
+	function GetVersion()       { return 3.1; }
+	function GetRevision()		{ return 251206; }
 	function GetName()          { return "Ship Manager"; }
 
 
@@ -277,18 +276,37 @@ function ManShips::AddRoute (ShipID, CargoNo) {
 	TempRoute._Cargo = CargoNo;
 	TempRoute._Capacity = AIVehicle.GetCapacity(ShipID, CargoNo);
 
+	Log.Note(
+		"ShipManager.AddRoute(ShipID=" + ShipID + ", CargoNo=" + CargoNo + " (" + AICargo.GetCargoLabel(CargoNo) + "))",
+		5
+	);
+
+	Log.Note("OrderCount:" + AIOrder.GetOrderCount(ShipID), 7);
+	local _first_station = true;
 	for (local i = 0; i < AIOrder.GetOrderCount(ShipID); i++) {
-		local _first_station = true
+		Log.Note("    is for a Station? order" + i + " ? " + AIOrder.IsGotoStationOrder(ShipID, i), 7);
 		if (AIOrder.IsGotoStationOrder(ShipID, i) == true) {
+			local _station_id = AIStation.GetStationID(AIOrder.GetOrderDestination(ShipID, i));
+			Log.Note(
+				"        Station? №" + _station_id + " (" + AIBaseStation.GetName(_station_id) + ")"
+				+ " / first_station? " + _first_station,
+				7
+			);
 			if (_first_station == true) {
-				TempRoute._SourceStation = AIStation.GetStationID(AIOrder.GetOrderDestination(ShipID, i));
+				TempRoute._SourceStation = _station_id;
+				Log.Note(
+					"            Source Station set to №"
+					+ TempRoute._SourceStation + " / " + _station_id,
+				7);
 				TempRoute._Depot = Marine.NearestDepot(AIOrder.GetOrderDestination(ShipID, i));
 				_first_station = false;
 			} else {
 				// assumes the orders only include two stations
-				// TODO: this isn't being provided properly and is breaking the
-				// 			later engine check.
-				TempRoute._DestinationStation = AIStation.GetStationID(AIOrder.GetOrderDestination(ShipID, i));
+				TempRoute._DestinationStation = _station_id;
+				Log.Note(
+					"            Destination Station set to №"
+					+ TempRoute._DestinationStation + " / " + _station_id,
+				7);
 				i = 1000;	// break
 			}
 		}
@@ -312,8 +330,38 @@ function ManShips::AddRoute (ShipID, CargoNo) {
 	TempRoute._LastUpdate = AIController.GetTick();
 	TempRoute._LastEngineCheck = AIController.GetTick();
 
+	Log.Note("ShipRoute: "
+		+ TempRoute._FirstShipID + " / "
+		+ TempRoute._Capacity + " / "
+		+ TempRoute._Cargo + " / "
+		+ TempRoute._SourceStation + " / "
+		+ TempRoute._DestinationStation + " / "
+		+ TempRoute._Depot + " / "
+		+ TempRoute._LastUpdate + " / "
+		+ TempRoute._LastEngineCheck + " / "
+		+ TempRoute._GroupID
+		+ "",
+		7
+	);
+
 	this._AllRoutes.push(TempRoute);
-	Log.Note("Route added! Ship " + TempRoute._FirstShipID + "; " + TempRoute._Capacity + " tons of " + AICargo.GetCargoLabel(TempRoute._Cargo) + "; starting at " + TempRoute._SourceStation + "; build at " + TempRoute._Depot + "; updated at tick " + TempRoute._LastUpdate + ".", 4);
+	Log.Note(
+		"Route added! Ship №" + TempRoute._FirstShipID + "; "
+		+ TempRoute._Capacity + " tons of "
+		+ AICargo.GetCargoLabel(TempRoute._Cargo) + ";",
+		4
+	)
+	Log.Note("    starting at № " + TempRoute._SourceStation + " ("
+		+ AIBaseStation.GetName(TempRoute._SourceStation) + ") and ending at №"
+		+ TempRoute._DestinationStation + " ("
+		+ AIBaseStation.GetName(TempRoute._DestinationStation) + ");"" ,
+		4
+	);
+	Log.Note(
+		"    build at depot №" + TempRoute._Depot + "; updated at tick "
+		+ TempRoute._LastUpdate + ".",
+		4
+	);
 }
 
 // EOF
