@@ -419,15 +419,14 @@ function WmDOT::BuildWmHQ() {
 		if (AICompany.GetCompanyHQ(AICompany.ResolveCompanyID(i)) != -1) {
 			local TestName = AICompany.GetName(i);
 			if (TestName.find("DOT") != null) {
-				Log.Note("DOT HQ found for company no. " + i + " in town " + HQInWhatTown(i) + ".", 3);
+				Log.Note("DOT HQ found for company №" + i + " in town " + HQInWhatTown(i) + ".", 3);
 				DotHQList.append(HQInWhatTown(i));
 			}
 		}
 	}
 
 	WmTownList.Valuate(AITown.GetPopulation);
-	local HQTown = AITown();
-	HQTown = WmTownList.Begin();
+	local HQTown = WmTownList.Begin();
 	local OriginalHQTown = HQTown;
 
 	while (Array.ContainedIn1D(DotHQList, HQTown)) {
