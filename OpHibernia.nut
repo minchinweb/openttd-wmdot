@@ -1,5 +1,5 @@
-﻿/*	Operation Hibernia v.8.1, [2025-07-19]
- *		part of WmDOT v.15
+﻿/*	Operation Hibernia v.8.2, [2025-12-06]
+ *		part of WmDOT v.17
  *	Copyright © 2011-14, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
@@ -20,7 +20,8 @@
  *		Hibernia is the world's largest oil platform.
  *
  *		Operation Hibernia seeks out oil platforms, and then transports oil to
- *		Oil Refineries.
+ *      Oil Refineries. This has been further generalised to transport any
+ *      cargo from industries with docks.
  */
 
 //	Requires MinchinWeb's MetaLibrary v.10
@@ -33,8 +34,8 @@
 //		- better estimation (at the Atlas) of route profit
 
 class OpHibernia {
-	function GetVersion()       { return 8.1; }
-	function GetRevision()		{ return 250719; }
+	function GetVersion()       { return 8.2; }
+	function GetRevision()		{ return 251206; }
 	function GetName()          { return "Operation Hibernia"; }
 
 
@@ -260,6 +261,9 @@ function OpHibernia::Run() {
 
 			local KeepTrying = true;
 			while (KeepTrying == true) {
+				// Note: the BuildPair is [source, destination], but the
+				//       TileIDs of industries. These industries may or may not
+				//       have docks.
 				local BuildPair = this._Atlas.Pop();
 				if (BuildPair == null) {
 					Log.Note("No Build Pairs.", 3);
@@ -268,11 +272,11 @@ function OpHibernia::Run() {
 					Log.Note(
 						"Atlas' BuildPair is"
 						+ Array.ToStringTiles1D(BuildPair)
-						+ "  (Industries № "
+						+ "  (Industries №"
 						+ MetaLib.Industry.GetIndustryID(BuildPair[0])
 						+ " ("
 						+ AIIndustry.GetName(MetaLib.Industry.GetIndustryID(BuildPair[0]))
-						+ ") and "
+						+ ") and №"
 						+ MetaLib.Industry.GetIndustryID(BuildPair[1])
 						+ " ("
 						+ AIIndustry.GetName(MetaLib.Industry.GetIndustryID(BuildPair[1]))
@@ -281,11 +285,11 @@ function OpHibernia::Run() {
 					);
 					///	Get build location for dock at Oil Refinery
 					//	At this point, we know that the first industry has a dock; now we have to figure out what to do about the second industry
-					local DockLocation = _MinchinWeb_C_.InvalidTile();
+					local DockLocation2 = _MinchinWeb_C_.InvalidTile();
 
 					if (AIIndustry.HasDock(MetaLib.Industry.GetIndustryID(BuildPair[1])) == true) {
 						//	1. Test if the Industry has a built in dock
-						DockLocation = AIIndustry.GetDockLocation(MetaLib.Industry.GetIndustryID(BuildPair[1]));
+						DockLocation2 = AIIndustry.GetDockLocation(MetaLib.Industry.GetIndustryID(BuildPair[1]));
 					} else {
 						//	2. Test if we have a dock built that would work
 						Log.Note("Max Station Spread is : " + MetaLib.Constants.MaxStationSpread(), 5);
@@ -305,7 +309,7 @@ function OpHibernia::Run() {
 							MyStations.Valuate(AIStation.GetDistanceManhattanToTile, BuildPair[0]);
 							MyStations.Sort(AIList.SORT_BY_VALUE, AIList.SORT_ASCENDING);
 							local templist = AITileList_StationType(MyStations.Begin(), AIStation.STATION_DOCK);
-							DockLocation = templist.Begin();
+							DockLocation2 = templist.Begin();
 						} else {
 							//	3. Build a dock
 							//	TODO: consider using station spread to get a spot (i.e. build a
@@ -329,20 +333,20 @@ function OpHibernia::Run() {
 								PossibilitiesAIList.Sort(AIList.SORT_BY_VALUE, AIList.SORT_ASCENDING);
 
 								local KeepTrying3 = true;
-								DockLocation = PossibilitiesAIList.Begin();
+								DockLocation2 = PossibilitiesAIList.Begin();
 								while (KeepTrying3) {
-									Log.Note("Trying DockLocation =" + Array.ToStringTiles1D([DockLocation]), 5);
-									// DockLocation = PossibilitiesAIList.Next();
-									if ((AITile.GetCargoAcceptance(DockLocation, CargoNo, 1, 1, AIStation.GetCoverageRadius(AIStation.STATION_DOCK)) >= 8) && (AIMarine.BuildDock(DockLocation, AIStation.STATION_NEW))) {
+									Log.Note("Trying DockLocation2 =" + Array.ToStringTiles1D([DockLocation2]), 5);
+									// DockLocation2 = PossibilitiesAIList.Next();
+									if ((AITile.GetCargoAcceptance(DockLocation2, CargoNo, 1, 1, AIStation.GetCoverageRadius(AIStation.STATION_DOCK)) >= 8) && (AIMarine.BuildDock(DockLocation2, AIStation.STATION_NEW))) {
 										// it worked! We have a dock! Nothing more...
-										Log.Note("Built Dock at" + Array.ToStringTiles1D([DockLocation]), 3);
+										Log.Note("Built Dock at" + Array.ToStringTiles1D([DockLocation2]), 3);
 										KeepTrying3 = false;
 									} else {
 										if (PossibilitiesAIList.IsEnd()) {
-											DockLocation = MetaLib.Constants.InvalidTile()
+											DockLocation2 = MetaLib.Constants.InvalidTile()
 											KeepTrying3 = false;
 										} else {
-											DockLocation = PossibilitiesAIList.Next();
+											DockLocation2 = PossibilitiesAIList.Next();
 										}
 									}
 								}
@@ -350,14 +354,14 @@ function OpHibernia::Run() {
 						}
 					}
 
-					if (DockLocation == MetaLib.Constants.InvalidTile()) {
+					if (DockLocation2 == MetaLib.Constants.InvalidTile()) {
 						Log.Note("No valid dock location.", 3);
 						//	probably keep KeepTrying = true
 					} else {
-						Log.Note("DockLocation is" + Array.ToStringTiles1D([DockLocation]) + ".", 3);
+						Log.Note("DockLocation2 is" + Array.ToStringTiles1D([DockLocation2]) + ".", 3);
 						///	Run Waterbody Check to see if Oil Refinery dock and Oil Rig are connected
 						local Starts = Marine.GetDockFrontTiles(BuildPair[0]);
-						local Ends = Marine.GetDockFrontTiles(DockLocation);
+						local Ends = Marine.GetDockFrontTiles(DockLocation2);
 						Log.Note("starts: " + Array.ToStringTiles1D(Starts) + "  -> ends: " + Array.ToStringTiles1D(Ends), 5);
 
 						//	The Ship Pathfinder can only have one start and one end tile
@@ -504,8 +508,8 @@ function OpHibernia::Run() {
 										}
 										//	end station
 										//	don't rely on automatic unloading, as nearby oil wells can break this
-										AIOrder.AppendOrder(MyVehicle, DockLocation, AIOrder.OF_UNLOAD | AIOrder.OF_NO_LOAD);
-										Log.Note("Order (End): " + MyVehicle + " : " + Array.ToStringTiles1D([DockLocation]) + ".", 5);
+										AIOrder.AppendOrder(MyVehicle, DockLocation2, AIOrder.OF_UNLOAD | AIOrder.OF_NO_LOAD);
+										Log.Note("Order (End): " + MyVehicle + " : " + Array.ToStringTiles1D([DockLocation2]) + ".", 5);
 										//	buoys, but backwards
 										for (local i = SPFResults.len() - 1; i >= 0; i--) {
 											AIOrder.AppendOrder(MyVehicle, SPFResults[i], AIOrder.OF_NONE);
