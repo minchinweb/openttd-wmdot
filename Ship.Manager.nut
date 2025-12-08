@@ -1,4 +1,4 @@
-﻿/*	Ship Manager v.3, [2025-07-14]
+﻿/*	Ship Manager v.3.1, [2025-12-07]
  *		part of WmDOT v.15
  *	Copyright © 2012, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
@@ -19,7 +19,7 @@
 
 class ManShips {
 	function GetVersion()       { return 3.1; }
-	function GetRevision()		{ return 251206; }
+	function GetRevision()		{ return 251207; }
 	function GetName()          { return "Ship Manager"; }
 
 
@@ -205,15 +205,11 @@ function RecheckEngine() {
 		local _current_engine = AIVehicle.GetEngineType(_prime_vehicle);
 		local _current_capacity = AIVehicle.GetCapacity(_prime_vehicle, _cargo);
 		local _travel_distance = 0;
-		for (i = 0; i < AIOrder.GetOrderCount(_prime_vehicle) - 1; i++) {
-			local _o1 = AIOrder.GetOrderDestination(_prime_vehicle, i);
-			local _o2 = AIOrder.GetOrderDestination(_prime_vehicle, i + 1);
-			_travel_distance = AIMap.DistanceManhattan(_o1, _o2);
+		for (local j = 0; j < AIOrder.GetOrderCount(_prime_vehicle) - 1; j++) {
+			local _o1 = AIOrder.GetOrderDestination(_prime_vehicle, j);
+			local _o2 = AIOrder.GetOrderDestination(_prime_vehicle, j + 1);
+			_travel_distance += AIMap.DistanceManhattan(_o1, _o2);
 		}
-		_travel_distance = AIMap.DistanceManhattan(
-			AIOrder.GetOrderDestination(_prime_vehicle, AIOrder.GetOrderCount(_prime_vehicle)),
-			AIOrder.GetOrderDestination(_prime_vehicle, 0)
-		);
 		local _pay_distance = AIMap.DistanceManhattan(
 			AIBaseStation.GetLocation(_start_station),
 			AIBaseStation.GetLocation(_end_station)
@@ -221,14 +217,14 @@ function RecheckEngine() {
 		local _travel_ratio = (_travel_distance.tofloat() / _pay_distance.tofloat() * 100).tointeger();
 
 		Log.Note(
-			"Confirming Engine for Route № " + i + "... using "
+			"Confirming Engine for Route №" + i + "... using "
 			+ AIEngine.GetName(_current_engine) + " (" + _current_engine + "),"  // current engine
-			+ " carries " _current_capacity + " tons of " + AICargo.GetCargoLabel(_cargo), // cargo capacity
+			+ " carries " + _current_capacity + " tons of " + AICargo.GetCargoLabel(_cargo), // cargo capacity
 			3
 		);
 		Log.Note(
 			// "     " +
-			"from " + AIBaseStation.GetName(_station_station) // from station
+			"from " + AIBaseStation.GetName(_start_station) // from station
 			+ " to " + AIBaseStation.GetName(_end_station)  // to station
 			+ " with production of " + _monthly_cargo + " ton/month.",  // station cargo volume (monthly)
 			4
@@ -241,6 +237,7 @@ function RecheckEngine() {
 			4
 		);
 
+		local Engines = AIEngineList(AIVehicle.VT_WATER);
 		Engines.Valuate(Marine.RateShips3, _cargo, _monthly_cargo, _travel_distance, _pay_distance);
 
 		//	Only keep the vehicles expected to make a
@@ -263,6 +260,8 @@ function RecheckEngine() {
 				AIGroup.SetAutoReplace( _group, _current_engine, _picked_engine);
 			}
 		} else {
+			// The first month, no engine will be profitable because the
+			// transported percentage will be zero (or close to it).
 			Log.Note("     No profitable engine available. No changes.", 3);
 		}
 
@@ -354,7 +353,7 @@ function ManShips::AddRoute (ShipID, CargoNo) {
 	Log.Note("    starting at № " + TempRoute._SourceStation + " ("
 		+ AIBaseStation.GetName(TempRoute._SourceStation) + ") and ending at №"
 		+ TempRoute._DestinationStation + " ("
-		+ AIBaseStation.GetName(TempRoute._DestinationStation) + ");"" ,
+		+ AIBaseStation.GetName(TempRoute._DestinationStation) + ");" ,
 		4
 	);
 	Log.Note(

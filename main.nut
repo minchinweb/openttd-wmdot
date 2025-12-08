@@ -21,6 +21,7 @@ import("util.MinchinWeb", "MetaLib", 11);
 	Atlas <- MetaLib.Atlas;
 	Marine <- MetaLib.Marine;
 	OpLog <- MetaLib.Log;
+	Engine <- MetaLib.Engine;
 import("util.superlib", "SuperLib", 40);		//	For loan management
 	SLMoney <- SuperLib.Money;
 	Helper <- SuperLib.Helper;
