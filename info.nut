@@ -1,4 +1,4 @@
-﻿/*	WmDOT v.15, [2025-09-30]
+﻿/*	WmDOT v.16, [2025-12-07]
  *	Copyright © 2011-16, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *		OR  http://www.tt-forums.net/viewtopic.php?f=65&t=53698
@@ -18,10 +18,10 @@ class WmDOT extends AIInfo
 {
 	function GetAuthor()        { return "Wm. Minchin"; }
 	function GetName()          { return "WmDOT"; }
-	function GetDescription()   { return "An AI that doesn't compete with you but rather builds out the highway network. It makes a little money transporting offshore oil and running public transit. v.15.1 (r.250715)"; }
-	function GetVersion()       { return 15; }
+	function GetDescription()   { return "An AI that doesn't compete with you but rather builds out the highway network. It makes a little money transporting offshore oil and running public transit. v.16 (r.251207)"; }
+	function GetVersion()       { return 16; }
 	function MinVersionToLoad() { return 1; }
-	function GetDate()          { return "2025-09-30"; }
+	function GetDate()          { return "2025-12-07"; }
 	function GetShortName()     { return "}}mW"; }	//	0x576D7D7D
 	function CreateInstance()   { return "WmDOT"; }
 	function GetAPIVersion()    { return "1.11"; }

@@ -1,4 +1,4 @@
-﻿/*	WmDOT v.15, [2025-09-30]
+﻿/*	WmDOT v.16, [2025-12-07]
  *	Copyright © 2011-13, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
@@ -44,10 +44,10 @@ require("Streetcar.Manager.nut");	//	Streetcar (Route) Manager
 class WmDOT extends AIController
 {
 	//	SETTINGS
-	WmDOTv = 15.1;
+	WmDOTv = 16;
 	/*	Version number of AI
 	 */
-	WmDOTr = 250715;
+	WmDOTr = 251207;
 	/*	Reversion number of AI
 	 */
 

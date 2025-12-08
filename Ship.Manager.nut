@@ -1,5 +1,5 @@
 ﻿/*	Ship Manager v.3.1, [2025-12-07]
- *		part of WmDOT v.15
+ *		part of WmDOT v.16
  *	Copyright © 2012, 2025 by W. Minchin. For more info,
  *		please visit https://github.com/MinchinWeb/openttd-wmdot
  *
@@ -47,6 +47,7 @@ class ManShips {
 }
 
 class ShipRoute {
+	// TODO: Also track attached industries
 	_FirstShipID = null;		// ID of Ship
 	_Capacity = null;			// in tons
 	_Cargo = null;				// what do we carry

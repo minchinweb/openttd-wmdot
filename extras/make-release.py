@@ -19,18 +19,22 @@
 """This script is a Python script to generate a tar file of WmDOT for
 upload to BaNaNaS. v2 [2014-03-03]"""
 
+# pip install pypiwin32 winshell
+
 import fileinput
 import os
 import re
 import tarfile
 from os.path import join
+from pathlib import Path
 
 import winshell
 
-SourceDir = join("..")
-OutputDir = join("..", "releases")
-if not os.path.exists(OutputDir):
-    os.makedirs(OutputDir)
+HERE = Path(__file__).parent.resolve()
+SourceDir = (HERE / "..").resolve()
+OutputDir = (HERE / ".." / "releases").resolve()
+
+OutputDir.mkdir(exist_ok=True)
 
 
 def multiple_replacer(*key_values):
@@ -55,7 +59,7 @@ mdReplacements = ("%MinchinWeb", "MinchinWeb"), ("\\_", "_"), ("←", "<-")
 
 # find version
 version = 0
-with open(join(SourceDir, "info.nut"), "r") as VersionFile:
+with open((SourceDir / "info.nut"), "r") as VersionFile:
     for line in VersionFile:
         if "GetVersion()" in line:
             version = line[line.find("return") + 6 : line.find(";")].strip()
@@ -63,7 +67,7 @@ with open(join(SourceDir, "info.nut"), "r") as VersionFile:
 # Create AI version
 WmDOTVersion = "WmDOT-" + version
 # LineCount = 0
-TarFileName = join(OutputDir, WmDOTVersion + ".tar")
+TarFileName = (OutputDir / (WmDOTVersion + ".tar"))
 MyTarFile = tarfile.open(name=TarFileName, mode="w")
 for File in os.listdir(SourceDir):
     if os.path.isfile(join(SourceDir, File)):
